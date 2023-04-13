@@ -1,0 +1,9 @@
+ol { /*https://stackoverflow.com/a/21909808*/
+	counter-reset: section;
+	list-style-type: none;
+}
+  
+li:before { /*https://stackoverflow.com/a/21909808*/
+	counter-increment: section;
+	content: counters(section, ".") ", ";
+}
