@@ -132,8 +132,8 @@ switch(quizType){
 		
 		for(var i = 0; i < quiz.children.length; i++){
 			const newTemp = temp.content.children[0].cloneNode(true);
-			newTemp.addEventListener("change", test);
-			newTemp.oldVal = "";
+			/*newTemp.addEventListener("change", test);
+			newTemp.oldVal = "";*/
 			newTemp.id = i;
 			quiz.children[i].prepend(newTemp);
 		}
