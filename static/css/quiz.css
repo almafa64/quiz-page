@@ -1,0 +1,18 @@
+.col-5{
+	border: 2px solid grey;
+	border-radius: 5px;
+}
+
+.col-5 p{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.mx-auto{
+	text-align: center;
+}
+
+.col-1{
+	font-size: 3rem;
+}

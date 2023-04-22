@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>4. Kérdés</title>
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="../../static/css/quiz.css">
+
+	<script src="../../static/scr/files.js"></script>
+</head>
+<body>
+
+	<template id="template">
+		<select>
+			<option value="0">1.</option>
+			<option value="1">2.</option>
+			<option value="2">3.</option>
+			<option value="3">4.</option>
+		</select>
+	</template>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="nav">
+
+			</div>
+		</div>
+
+		<nav class="row">
+			<div class="d-flex flex-wrap" id="jump"></div>
+		</nav>
+
+		<header class="row">
+			<div class="col-12">
+				<h1>Hogyan tudsz főzni level 2-es sebesség főzetett?</h1>
+			</div>
+		</header>
+		<main>
+			<div class="row">
+				<div class="col-12">
+					<form id="quiz" t="2" onsubmit="return false">
+						<div>
+							<label for="0">Vizespalack</label>
+						</div>
+						<div>
+							<label for="1">Netherbibircsók</label>
+						</div>
+						<div>
+							<label for="2">Cukor</label>
+						</div>
+						<div>
+							<label for="3">Izókő-por</label>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-12">
+					<button id="prev">Elöző</button>
+					<button id="next">Következő</button>
+					<button onclick="check(this)">Ellenőrzés</button>
+				</div>
+			</div>
+		</main>
+
+		<footer class="row">
+			<div class="col-12">
+
+			</div>
+		</footer>
+	</div>
+
+	<script src="../../scr/quiz.js"></script>
+</body>
+</html>

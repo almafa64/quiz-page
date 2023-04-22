@@ -1,0 +1,90 @@
+[{
+	"name":"minecraft",
+	"max_page":4,
+	"subs":[],
+	"quiz":
+	[
+		[
+			0, 
+			"Hogyan ütsz minecraftban?",
+			[
+				"Space",
+				"Bal klikk",
+				"Jobb klikk",
+				"Attól függ"
+			]
+		],
+		[
+			0, 
+			"Mi ehető ezek közül?",
+			[
+				"Malac hús",
+				"Hajó",
+				"Bot",
+				"Gomba leves",
+				"refréngyümölcs"
+			]
+		],
+		[
+			1,
+			"Párosísd össze a neveket",
+			[
+				"Ender",
+				"Nether",
+				"Fenyő"
+			]
+		],
+		[
+			2, 
+			"Hogyan tudsz főzni level 2-es sebesség főzetett?",
+			[
+				"Vizespalack",
+				"Netherbibircsók",
+				"Cukor",
+				"Izókő-por"
+			]
+		]
+	],
+	"good":
+	[
+		3,
+		[
+			0,
+			3,
+			4
+		],
+		[
+			"man",
+			"kapu",
+			"deszka"
+		],
+		[
+			1,
+			2,
+			3,
+			4
+		]
+	]
+}]
+
+name: topik neve
+max_page: maximum kérdés oldalak száma
+subs: altémák
+quiz[kérdés száma] (hardcode into the html file?):
+	1. adat: tipus jelző:
+		0: rádió gombok / jelölő gombok (egy szám / több szám)
+		1: párosítós húzogató
+		2: sorrendbe rakosgató
+		3: kép kiválasztós?
+		4: geoguesser?
+	2. adat: kérdés neve
+	3. adat (változik a tipus jelző alapján):
+		0: [lehetséges megoldások]
+		1: [blokk nevek amihez párosítani kell a good-okat]
+		2: [blokk nevek amit a good alapján sorrendbe kell rakni]
+		3: [[koordináta, név], [koordináta, név], stb]
+good[kérdés száma] (változik a quiz tipus jelző alapján):
+	0, 3: jó megfejtés (sorszáma / sorszámai)
+	1: blokk nevek amit párosítani kell a quiz-hez
+	2: sorrend számok
+	4: [lng, lat]

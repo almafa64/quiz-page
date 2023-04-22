@@ -27,7 +27,7 @@ function testWrite(){ //write
 		'Accept': 'application/json',
 		'Content-Type': 'application/json'
 		},
-		body: JSON.stringify([{"name":"handmade_oof","max_question":1,"subs":[]}])
+		body: JSON.stringify([{"name":"handmade_oof","max_page":1,"subs":[]}])
 	})
 	.then(() => window.location.reload())
 	.catch(err => console.error(err));
