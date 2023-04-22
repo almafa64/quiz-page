@@ -1,1 +1,0 @@
-const data=[{"name":"minecraft","max_page":4,"subs":[],"good":[3,[0,3,4],["man","kapu","deszka"],[1,2,3,4]]}]

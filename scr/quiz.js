@@ -23,16 +23,32 @@ const quizType = parseInt(quiz.getAttribute("t"));
 var answers = curElement.good[curNum];
 
 function nextLink(){
-	window.location.href = `/quizes/${curName}/${curNum+2}.html`;
+	window.location.href = `../../quizes/${curName}/${curNum+2}.html`;
 }
 function prevLink(){
-	window.location.href = `/quizes/${curName}/${curNum}.html`;
+	window.location.href = `../../quizes/${curName}/${curNum}.html`;
 }
 
 function shuffle(base){
 	for (var i = base.children.length; i >= 0; i--) { //https://stackoverflow.com/a/11972692
 		base.appendChild(base.children[Math.random() * i | 0]);
 	}
+}
+
+function test(e = document.createElement("select")){
+	e = e.target;
+	if(e.value != ""){
+		const parent = e.parentElement;
+		const divs = e.parentElement.parentElement.children;
+		/*for(var i = 0; i < divs.length; i++){
+			const div = divs[i];
+			if(div != parent && div.firstElementChild.value == e.value){
+				//div.firstElementChild.value = document.oldVal;
+				break;
+			}
+		}*/
+	}
+	//document.oldVal = e.value;
 }
 
 function check(e){
@@ -100,7 +116,7 @@ const jump = document.getElementById("jump");
 
 for(var i = 1; i <= curElement.max_page; i++){
 	const a = jump.appendChild(document.createElement("div")).appendChild(document.createElement("a"));
-	a.href = `/quizes/${curName}/${i}.html`;
+	a.href = `../../quizes/${curName}/${i}.html`;
 	a.innerText = i;
 	a.parentElement.classList.add("p-1");
 }
@@ -112,10 +128,12 @@ switch(quizType){
 	case 1:
 		break;
 	case 2:
-		const temp = document.getElementById("template");
-		answers = [];
+		const temp = document.getElementById("temp");
+		
 		for(var i = 0; i < quiz.children.length; i++){
 			const newTemp = temp.content.children[0].cloneNode(true);
+			newTemp.addEventListener("change", test);
+			newTemp.oldVal = "";
 			newTemp.id = i;
 			quiz.children[i].prepend(newTemp);
 		}

@@ -42,7 +42,7 @@ function createListItem(data, currentOl){
 	/*const link = window.location.href;
 	const endIndex = link.indexOf("index.html")-1;
 	a.href = `${link.substring(0, endIndex)}/quizes/${data.name}/index.html`;*/
-	a.href = `/quizes/${data.name}/index.html`;
+	a.href = `quizes/${data.name}/index.html`;
 	
 	if(data.subs.length != 0){
 		newList.appendChild(document.createElement("ol"))
