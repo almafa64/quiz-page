@@ -1,3 +1,8 @@
+body{
+	user-select: none;
+	touch-action: none;
+}
+
 .col-5{
 	border: 2px solid grey;
 	border-radius: 5px;
@@ -15,4 +20,14 @@
 
 .col-1{
 	font-size: 3rem;
+}
+
+#jump div{
+	border: 1px solid grey;
+	border-radius: 10px;
+}
+
+#jump{
+	width: 100%;
+	text-align: center;
 }

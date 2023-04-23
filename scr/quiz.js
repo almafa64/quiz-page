@@ -14,13 +14,15 @@ const curName = link.substring(startIndex2, endIndex2);
 
 const curElement = data.find(e => e.name == curName);
 
+const answers = curElement.good[curNum];
+
 const curNumTooBig = (curElement.max_page == curNum+1);
 const curNumTooSmall = (curNum) <= 0;
 
 const quiz = document.getElementById("quiz");
 const quizType = parseInt(quiz.getAttribute("t"));
 
-var answers = curElement.good[curNum];
+const jump = document.getElementById("jump");
 
 function nextLink(){
 	window.location.href = `../../quizes/${curName}/${curNum+2}.html`;
@@ -35,20 +37,19 @@ function shuffle(base){
 	}
 }
 
-function test(e = document.createElement("select")){
-	e = e.target;
+function sortFix(e){
 	if(e.value != ""){
 		const parent = e.parentElement;
-		const divs = e.parentElement.parentElement.children;
-		/*for(var i = 0; i < divs.length; i++){
+		const divs = parent.parentElement.children;
+		for(var i = 0; i < divs.length; i++){
 			const div = divs[i];
 			if(div != parent && div.firstElementChild.value == e.value){
-				//div.firstElementChild.value = document.oldVal;
+				div.firstElementChild.oldVal = div.firstElementChild.value = e.oldVal;
+				e.oldVal = e.value;
 				break;
 			}
-		}*/
+		}
 	}
-	//document.oldVal = e.value;
 }
 
 function check(e){
@@ -71,6 +72,17 @@ function check(e){
 			else good = button_checks[0].id == answers; // rádió gombok
 			break;
 		case 1: //párba rakós
+			good = true;
+			const divs = quiz.children;
+			for(var i = 0; i < divs.length; i++){
+				const div = divs[i];
+				const child = div.querySelector("div:last-child");
+				if(answers[div.id] != child.children[0].innerText){
+					good = false;
+					break;
+				}
+			}
+
 			break;
 		case 2: //sorba rakós
 			const num_checks = quiz.querySelectorAll("select");
@@ -96,47 +108,62 @@ function check(e){
 	else alert("rossz válasz");
 }
 
-if(curNumTooBig || curNumTooSmall){
-	if(curNumTooBig && !curNumTooSmall){
-		next.disabled = true;
-		prev.addEventListener("click", prevLink);
-	}
-	else if(curNumTooSmall && !curNumTooBig){
-		prev.disabled = true;
-		next.addEventListener("click", nextLink);
-	}
-	else next.disabled = prev.disabled = true;
-}
-else{
-	next.addEventListener("click", nextLink);
-	prev.addEventListener("click", prevLink);
-}
+if(curNumTooBig) next.disabled = true;
+else next.addEventListener("click", nextLink);
 
-const jump = document.getElementById("jump");
+if(curNumTooSmall) prev.disabled = true;
+else prev.addEventListener("click", prevLink);
 
 for(var i = 1; i <= curElement.max_page; i++){
-	const a = jump.appendChild(document.createElement("div")).appendChild(document.createElement("a"));
+	const div = jump.appendChild(document.createElement("div"));
+	div.classList.add("p-sm-2", "px-sm-3", "p-1", "px-2", "mx-sm-2", "mx-1");
+	const a = div.appendChild(document.createElement("a"));
 	a.href = `../../quizes/${curName}/${i}.html`;
 	a.innerText = i;
-	a.parentElement.classList.add("p-1");
 }
 
 switch(quizType){
-	case 0:
-		shuffle(quiz);
-		break;
 	case 1:
+		var activeE = null;
+		onpointermove = e => {
+			if(activeE != null){
+				activeE.style.top = `${parseFloat(activeE.style.top) + e.movementY}px`;
+				activeE.style.left = `${parseFloat(activeE.style.left) + e.movementX}px`;
+			}
+		};
+		onpointerup = () => {
+			if(activeE != null){
+				quiz.removeChild(activeE);
+				activeE = null;
+			}
+		};
+
+		const lasts = quiz.querySelectorAll(".col-5:last-child");
+		lasts.forEach(e => {
+			e.addEventListener("pointerdown", ev => {
+				activeE = e.cloneNode(true);
+				
+				const width = window.getComputedStyle(e).width;
+				const height = window.getComputedStyle(e).height;
+
+				activeE.style.position = "fixed";
+				activeE.style.top = `${ev.pageY - (parseFloat(height)/2)}px`;
+				activeE.style.left = `${ev.pageX - (parseFloat(width)/2)}px`;
+				activeE.style.width = width;
+				activeE.style.height = height;
+				quiz.appendChild(activeE);
+			});
+		});
 		break;
 	case 2:
 		const temp = document.getElementById("temp");
-		
 		for(var i = 0; i < quiz.children.length; i++){
 			const newTemp = temp.content.children[0].cloneNode(true);
-			/*newTemp.addEventListener("change", test);
-			newTemp.oldVal = "";*/
+			newTemp.oldVal = "";
 			newTemp.id = i;
 			quiz.children[i].prepend(newTemp);
 		}
+	case 0: // rádió, jelölő, sorrend elemek randomizálása
 		shuffle(quiz);
 		break;
 }
