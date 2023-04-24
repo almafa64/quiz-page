@@ -3,7 +3,7 @@ next.style.display = "none";
 
 const prev = document.getElementById("prev");
 
-const link = window.location.href;
+const link = decodeURI(window.location.href);
 const startIndex = link.lastIndexOf("/") + 1;
 const endIndex = link.lastIndexOf(".html");
 const curNum = parseInt(link.substring(startIndex, endIndex)) - 1;
@@ -53,6 +53,12 @@ function sortFix(e){
 }
 
 function check(e){
+	function goodFinish(){
+		alert("jó válasz");
+		e.style.display = "none";
+		next.style.display = "";
+	}
+
 	var good = false;
 
 	switch(quizType){
@@ -62,7 +68,7 @@ function check(e){
 				if(button_checks.length == answers.length){
 					good = true;
 					button_checks.forEach(e => {
-						if(answers.indexOf(parseInt(e.id)) == -1) {
+						if(!answers.includes(parseInt(e.id))) {
 							good = false;
 							return;
 						}
@@ -88,7 +94,7 @@ function check(e){
 			const num_checks = quiz.querySelectorAll("select");
 			good = true;
 			num_checks.forEach(e => {
-				if(parseInt(e.value) != parseInt(e.nextElementSibling.getAttribute("for"))){
+				if(e.value != e.nextElementSibling.getAttribute("for")){
 					good = false;
 					return;
 				}
@@ -100,12 +106,39 @@ function check(e){
 			break;
 	}
 	
-	if(good){
-		alert("jó válasz");
-		e.style.display = "none";
-		next.style.display = "";
+	if(good) goodFinish();
+	else if(confirm("Rossz válasz!\nSzabad a gazda?")){
+		switch(quizType){
+			case 0:
+				const button_checks = quiz.querySelectorAll("input");
+				if(Array.isArray(answers)){
+					console.log(button_checks);
+					console.log(answers);
+					button_checks.forEach(e => {
+						if(answers.includes(parseInt(e.id))) e.checked = true;
+						else e.checked = false;
+					});
+				}
+				else{
+					button_checks.forEach(e => {
+						if(parseInt(e.id) == answers){
+							e.checked = true;
+							return;
+						}
+					});
+				}
+				break;
+			case 1:
+				break;
+			case 2:
+				const num_checks = quiz.querySelectorAll("select");
+				num_checks.forEach(e => {
+					e.value = e.nextElementSibling.getAttribute("for");
+				});
+				break;
+		}
+		setTimeout(goodFinish, 20);
 	}
-	else alert("rossz válasz");
 }
 
 if(curNumTooBig) next.disabled = true;
@@ -165,5 +198,29 @@ switch(quizType){
 		}
 	case 0: // rádió, jelölő, sorrend elemek randomizálása
 		shuffle(quiz);
+		break;
+	case 3:
+		const map = new L.map('quiz', {
+			center: [47.487667, 19.080785],
+			zoom: 11.2,
+			worldCopyJump: true,
+		});
+
+		/*L.geoJSON(coordsJSON, {
+			onEachFeature: onEachFeature,
+			pointToLayer: pointToLayer
+		}).addTo(map);*/
+		
+		const domainNum = quiz.getAttribute("d");
+		var tileDomain;
+		switch(domainNum){
+			case "0": tileDomain = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'; break;
+			case "1": tileDomain = 'https://tile.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'; break;
+			case "2": tileDomain = 'https://tile.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png'; break;
+		}
+
+		new L.tileLayer(tileDomain, {
+			attribution: `${((domainNum != "0")?'&copy; <a href="https://carto.com/attributions">CARTO</a>':'')} &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
+		}).addTo(map);
 		break;
 }

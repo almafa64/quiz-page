@@ -60,21 +60,41 @@
 		],
 		[]
 	]
+},
+{
+	"name":"random földrajz",
+	"max_page":1,
+	"subs":[],
+	"quiz": /*csak azért van itt hogy könyebb legyen érteni*/
+	[
+		[
+			3, 
+			"Hol van a pataky?"
+		],
+	],
+	"good":
+	[
+		[
+			47.49013716313074,
+			19.119271469945833
+		]
+	]
 }]
 
 random infók:
 	quiz class-nak kell t attribútum, ez a tipus jelző:
-		0: rádió gombok / jelölő gombok (egy szám / több szám)
+		0: rádió gombok / jelölő gombok (egy szám / több szám) // BONTSD SZÉT!!!
 		1: párosítós húzogató
 		2: sorrendbe rakosgató
-		3: kép kiválasztós?
-		4: geoguesser?
+		3: geoguesser?
+		4: kép kiválasztós?
+		
 
 files.js:
 	name: topik neve
 	max_page: maximum kérdés oldalak száma
 	subs: altémák
 	good[kérdés száma] (változik a tipus jelző alapján):
-		0, 3: jó megfejtés (sorszáma / sorszámai)
+		0, 4: jó megfejtés (sorszáma / sorszámai)
 		1: blokk nevek amit párosítani kell a quiz-hez
-		4: [lng, lat]
+		3: [lng, lat]
