@@ -83,11 +83,12 @@
 
 random infók:
 	quiz class-nak kell t attribútum, ez a tipus jelző:
-		0: rádió gombok / jelölő gombok (egy szám / több szám) // BONTSD SZÉT!!!
-		1: párosítós húzogató
-		2: sorrendbe rakosgató
-		3: geoguesser?
-		4: kép kiválasztós?
+		0: jelölő gombok
+		1: rádió gombok
+		2: párosítós húzogató
+		3: sorrendbe rakosgató
+		4: geoguesser?
+		5: kép kiválasztós?
 		
 
 files.js:
@@ -95,6 +96,6 @@ files.js:
 	max_page: maximum kérdés oldalak száma
 	subs: altémák
 	good[kérdés száma] (változik a tipus jelző alapján):
-		0, 4: jó megfejtés (sorszáma / sorszámai)
-		1: blokk nevek amit párosítani kell a quiz-hez
-		3: [lng, lat]
+		0, 1, 5: jó megfejtés (sorszáma / sorszámai)
+		2: blokk nevek amit párosítani kell a quiz-hez
+		4: [{"type":"Feature","geometry":{"type":"Point","coordinates":[lng, lat]}}, stb]

@@ -43,10 +43,10 @@ function sortFix(e){
 		const divs = parent.parentElement.children;
 		for(var i = 0; i < divs.length; i++){
 			const div = divs[i];
-			if(div != parent && div.firstElementChild.value == e.value){
+			if(div.firstElementChild.value == e.value && div != parent){
 				div.firstElementChild.oldVal = div.firstElementChild.value = e.oldVal;
 				e.oldVal = e.value;
-				break;
+				return;
 			}
 		}
 	}
@@ -62,35 +62,35 @@ function check(e){
 	var good = false;
 
 	switch(quizType){
-		case 0:  // rádió / jelölő
-			const button_checks = quiz.querySelectorAll("input:checked");
-			if(Array.isArray(answers)){ // jelölő négyzet
-				if(button_checks.length == answers.length){
-					good = true;
-					button_checks.forEach(e => {
-						if(!answers.includes(parseInt(e.id))) {
-							good = false;
-							return;
-						}
-					});
-				}
+		case 0: // jelölő gombok
+			const checks = quiz.querySelectorAll("input:checked");
+			if(checks.length == answers.length){
+				good = true;
+				checks.forEach(e => {
+					if(!answers.includes(parseInt(e.id))) {
+						good = false;
+						return;
+					}
+				});
 			}
-			else good = button_checks[0].id == answers; // rádió gombok
 			break;
-		case 1: //párba rakós
+		case 1: // rádió gombok
+			const radio = quiz.querySelector("input:checked");
+			good = radio.id == answers;
+			break;
+		case 2: //párba rakós
 			good = true;
-			const divs = quiz.children;
-			for(var i = 0; i < divs.length; i++){
-				const div = divs[i];
-				const child = div.querySelector("div:last-child");
-				if(answers[div.id] != child.children[0].innerText){
+			const rows = quiz.children;
+			for(var i = 0; i < rows.length; i++){
+				const row = rows[i];
+				const child = row.querySelector("div:last-child");
+				if(answers[row.id] != child.children[0].innerText){
 					good = false;
 					break;
 				}
 			}
-
 			break;
-		case 2: //sorba rakós
+		case 3: //sorba rakós
 			const num_checks = quiz.querySelectorAll("select");
 			good = true;
 			num_checks.forEach(e => {
@@ -100,9 +100,9 @@ function check(e){
 				}
 			});
 			break;
-		case 3:
-			break;
 		case 4:
+			break;
+		case 5:
 			break;
 	}
 	
@@ -110,34 +110,35 @@ function check(e){
 	else if(confirm("Rossz válasz!\nSzabad a gazda?")){
 		switch(quizType){
 			case 0:
-				const button_checks = quiz.querySelectorAll("input");
-				if(Array.isArray(answers)){
-					console.log(button_checks);
-					console.log(answers);
-					button_checks.forEach(e => {
-						if(answers.includes(parseInt(e.id))) e.checked = true;
-						else e.checked = false;
-					});
-				}
-				else{
-					button_checks.forEach(e => {
-						if(parseInt(e.id) == answers){
-							e.checked = true;
-							return;
-						}
-					});
-				}
+				const checks = quiz.querySelectorAll("input");
+				checks.forEach(e => e.checked = answers.includes(parseInt(e.id)));
 				break;
 			case 1:
-				break;
-			case 2:
-				const num_checks = quiz.querySelectorAll("select");
-				num_checks.forEach(e => {
-					e.value = e.nextElementSibling.getAttribute("for");
+				const radios = quiz.querySelectorAll("input");
+				radios.forEach(e => {
+					if(e.id == answers){
+						e.checked = true;
+						return;
+					}
 				});
 				break;
+			case 2:
+				const rows = quiz.children;
+				for(var i = 0; i < rows.length; i++){
+					const row = rows[i];
+					const child = row.querySelector("div:last-child");
+					child.children[0].innerText = answers[row.id];
+				}
+				break;
+			case 3:
+				const num_checks = quiz.querySelectorAll("select");
+				num_checks.forEach(e => e.value = e.nextElementSibling.getAttribute("for"));
+				break;
+			case 4: // map stored in check.map
+				L.geoJSON(answers).addTo(check.map);
+				break;
 		}
-		setTimeout(goodFinish, 20);
+		setTimeout(goodFinish, 50);
 	}
 }
 
@@ -156,7 +157,7 @@ for(var i = 1; i <= curElement.max_page; i++){
 }
 
 switch(quizType){
-	case 1:
+	case 2:
 		var activeE = null;
 		onpointermove = e => {
 			if(activeE != null){
@@ -188,7 +189,7 @@ switch(quizType){
 			});
 		});
 		break;
-	case 2:
+	case 3:
 		const temp = document.getElementById("temp");
 		for(var i = 0; i < quiz.children.length; i++){
 			const newTemp = temp.content.children[0].cloneNode(true);
@@ -196,15 +197,18 @@ switch(quizType){
 			newTemp.id = i;
 			quiz.children[i].prepend(newTemp);
 		}
-	case 0: // rádió, jelölő, sorrend elemek randomizálása
+	case 1: // rádió
+	case 0: // jelölő, sorrend elemek randomizálása
 		shuffle(quiz);
 		break;
-	case 3:
+	case 4:
 		const map = new L.map('quiz', {
 			center: [47.487667, 19.080785],
 			zoom: 11.2,
 			worldCopyJump: true,
 		});
+
+		check.map = map;
 
 		/*L.geoJSON(coordsJSON, {
 			onEachFeature: onEachFeature,

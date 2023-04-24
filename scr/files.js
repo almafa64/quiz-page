@@ -1,1 +1,1 @@
-const data=[{"name":"minecraft","max_page":4,"subs":[],"good":[3,[0,3,4],["man","kapu","deszka"],[]]},{"name":"random földrajz","max_page":1,"subs":[],"good":[[47.49013716313074,19.119271469945833]]}]
+const data=[{"name":"minecraft","max_page":4,"subs":[],"good":[3,[0,3,4],["man","kapu","deszka"],[]]},{"name":"random földrajz","max_page":1,"subs":[],"good":[[{"type":"Point","coordinates":[19.119271469945833,47.49013716313074]}]]}]
