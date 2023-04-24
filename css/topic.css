@@ -2,3 +2,12 @@
 	text-align: center;
 	font-size: 3rem;
 }
+
+nav.nav-tabs{
+	background-color: lightcoral;
+	padding: 2px 0 0 3px;
+	margin-bottom: 10px;
+}
+nav.nav-tabs .nav-link{
+	border-radius: 0;
+}
