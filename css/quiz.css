@@ -33,7 +33,7 @@ nav.nav-tabs .nav-link{
 }
 
 /* drag */
-#quiz[t="2"] .col-5:last-child, #quiz[t="2"] .m:last-child{
+#quiz[t="2"] .col-5:last-child, #quiz[t="2"] .m{
 	touch-action: none;
 }
 
