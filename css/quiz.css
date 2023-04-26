@@ -1,8 +1,3 @@
-html, body{
-	user-select: none;
-	touch-action: none;
-}
-
 nav.nav-tabs{
 	background-color: lightcoral;
 	padding: 2px 0 0 3px;
@@ -10,25 +5,6 @@ nav.nav-tabs{
 }
 nav.nav-tabs .nav-link{
 	border-radius: 0;
-}
-
-.col-5{
-	border: 2px solid grey;
-	border-radius: 5px;
-}
-
-.col-5 p{
-	position: relative;
-	top: 50%;
-	transform: translateY(-50%);
-}
-
-.mx-auto{
-	text-align: center;
-}
-
-.col-1{
-	font-size: 3rem;
 }
 
 #jump div{
@@ -41,6 +17,10 @@ nav.nav-tabs .nav-link{
 	text-align: center;
 }
 
+#quiz{
+	margin-bottom: 20px;
+}
+
 /* map */
 #quiz[t="4"], html, body{
 	max-width: 100%;
@@ -50,4 +30,43 @@ nav.nav-tabs .nav-link{
 	margin: 5px 1vw;
 	border: 1px solid grey;
 	border-radius: 10px;
+}
+
+/* drag */
+#quiz[t="2"] .col-5:last-child, #quiz[t="2"] .m:last-child{
+	touch-action: none;
+}
+
+.col-5, .m{
+	border: 2px solid grey;
+	border-radius: 5px;
+}
+
+.col-5 p, .m p{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.mx-auto, .m{
+	text-align: center;
+}
+
+.col-1{
+	font-size: 3rem;
+	padding: 0;
+}
+
+#hold{
+	width: 100%;
+	margin: 0 1.2vw; /* cheating */
+}
+
+.m{
+	padding: 0 10px;
+}
+
+.m:hover, .drag:has(p):hover{
+	background-color: lightgrey;
+	cursor: pointer;
 }

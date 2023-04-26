@@ -81,10 +81,10 @@ function check(e){
 		case 2: //párba rakós
 			good = true;
 			const rows = quiz.children;
-			for(var i = 0; i < rows.length; i++){
+			for(var i = 1; i < rows.length; i++){
 				const row = rows[i];
-				const child = row.querySelector("div:last-child");
-				if(answers[row.id] != child.children[0].innerText){
+				const child = row.lastElementChild;
+				if(child.childElementCount == 0 || answers[row.id] != child.firstElementChild.innerText){
 					good = false;
 					break;
 				}
@@ -122,14 +122,18 @@ function check(e){
 					}
 				});
 				break;
-			case 2:
+			case 2: // holdHeight stored in check.holdHeight
 				const rows = quiz.children;
-				for(var i = 0; i < rows.length; i++){
+				const first = rows[0].firstElementChild
+				first.innerHTML = "";
+				first.style.height = check.holdHeight;
+
+				for(var i = 1; i < rows.length; i++){
 					const row = rows[i];
-					const child = row.querySelector("div:last-child");
-					child.children[0].innerText = answers[row.id];
+					const last = row.lastElementChild;
+					if(last.childElementCount == 0) last.appendChild(document.createElement("p")).innerText = answers[row.id];
+					else last.firstElementChild.innerText = answers[row.id];
 				}
-				break;
 			case 3:
 				const num_checks = quiz.querySelectorAll("select");
 				num_checks.forEach(e => e.value = e.nextElementSibling.getAttribute("for"));
@@ -158,24 +162,81 @@ for(var i = 1; i <= curElement.max_page; i++){
 
 switch(quizType){
 	case 2:
+		const hold = document.getElementById("hold");
+		const holdBaseHeight = window.getComputedStyle(hold.firstElementChild).height;
+		check.holdHeight = holdBaseHeight;
 		var activeE = null;
+		var lastPlace = "";
 		onpointermove = e => {
 			if(activeE != null){
 				activeE.style.top = `${parseFloat(activeE.style.top) + e.movementY}px`;
 				activeE.style.left = `${parseFloat(activeE.style.left) + e.movementX}px`;
 			}
 		};
-		onpointerup = () => {
+		onpointerup = e => {
 			if(activeE != null){
+
 				quiz.removeChild(activeE);
+				var under = document.elementFromPoint(e.clientX, e.clientY);
+
+				activeE.style.position = "";
+				activeE.style.top = "";
+				activeE.style.left = "";
+				activeE.style.width = "";
+				activeE.style.height = "";
+
+				switch(under.tagName){
+					case "P":
+						under = under.parentElement;
+					case "DIV":
+						if(under.classList.contains("drag")){
+							const parent = under.parentElement;
+							const tmpCLassList = document.createElement("div").classList;
+							tmpCLassList.add(...activeE.classList);
+
+							activeE.classList = under.classList;
+
+							under.remove();
+
+							if(under.childElementCount > 0){
+								under.classList = tmpCLassList;
+
+								const lastCard = document.getElementById(lastPlace);
+								if(lastPlace != "hold") lastCard.lastElementChild.remove();
+								lastCard.appendChild(under);
+							}
+							parent.appendChild(activeE);
+							break;
+						}
+					default:
+						if(lastPlace == "hold" || under.id == "hold"){
+							activeE.classList = ["m"];
+							hold.appendChild(activeE);
+						}
+						else{
+							const row = document.getElementById(lastPlace);
+							const lastCard = row.lastElementChild;
+							activeE.classList = lastCard.classList;
+							
+							lastCard.remove();
+							row.appendChild(activeE);
+						}
+						break;
+				}
+
 				activeE = null;
+				lastPlace = "";
+				document.body.style.userSelect = "";
 			}
 		};
 
-		const lasts = quiz.querySelectorAll(".col-5:last-child");
+		const lasts = quiz.querySelectorAll(".m");
 		lasts.forEach(e => {
 			e.addEventListener("pointerdown", ev => {
-				activeE = e.cloneNode(true);
+				const parent = e.parentElement;
+				lastPlace = parent.id;
+
+				activeE = e;
 				
 				const width = window.getComputedStyle(e).width;
 				const height = window.getComputedStyle(e).height;
@@ -186,6 +247,13 @@ switch(quizType){
 				activeE.style.width = width;
 				activeE.style.height = height;
 				quiz.appendChild(activeE);
+
+				if(lastPlace == "hold"){
+					if(hold.childElementCount == 0) hold.style.height = holdBaseHeight;
+				}
+				else parent.appendChild(document.createElement("div")).classList.add("col-5", "mx-auto", "drag");
+
+				document.body.style.userSelect = "none";
 			});
 		});
 		break;
