@@ -154,52 +154,69 @@ else prev.addEventListener("click", prevLink);
 
 for(var i = 1; i <= curElement.max_page; i++){
 	const div = jump.appendChild(document.createElement("div"));
-	div.classList.add("p-sm-2", "px-sm-3", "p-1", "px-2", "mx-sm-2", "mx-1");
+	div.classList.value = "p-sm-2 px-sm-3 p-1 px-2 mx-sm-2 mx-1";
 	const a = div.appendChild(document.createElement("a"));
 	a.href = `../../quizes/${curName}/${i}.html`;
-	a.innerText = i;
+	a.innerText = `${i}.`;
 }
 
 switch(quizType){
 	case 2:
+		function removeRun(){
+			if(onpointermove.run != undefined){
+				clearTimeout(onpointermove.run);
+				onpointermove.run = undefined;
+			}
+		}
 		const hold = document.getElementById("hold");
-		const holdBaseHeight = window.getComputedStyle(hold.firstElementChild).height;
-		check.holdHeight = holdBaseHeight;
+		const holdBaseHeight = check.holdHeight = window.getComputedStyle(hold.firstElementChild).height;
 		var activeE = null;
 		var lastPlace = "";
 		onpointermove = e => {
+			function loopAfterNoMove(newUpDownScrool){
+				//newUpDownScrool = -1: up / 1: down
+				onpointermove.run = setTimeout(function run() {
+					window.scrollBy(0, 3 * newUpDownScrool);
+					onpointermove.run = setTimeout(run, 1);
+				}, 1);
+				
+			}
+
 			if(activeE != null){
+				removeRun();
+
 				activeE.style.top = `${parseFloat(activeE.style.top) + e.movementY}px`;
 				activeE.style.left = `${parseFloat(activeE.style.left) + e.movementX}px`;
+
+				if(e.clientY < (window.innerHeight/10)) loopAfterNoMove(-1);
+				else if(e.clientY > (window.innerHeight/1.112)) loopAfterNoMove(1);
 			}
 		};
 		onpointerup = e => {
 			if(activeE != null){
+				removeRun();
 
-				quiz.removeChild(activeE);
+				activeE.remove();
 				var under = document.elementFromPoint(e.clientX, e.clientY);
 
-				activeE.style.position = "";
-				activeE.style.top = "";
-				activeE.style.left = "";
-				activeE.style.width = "";
-				activeE.style.height = "";
-
-				switch(under.tagName){
+				activeE.style.position = activeE.style.top = activeE.style.left = activeE.style.width = activeE.style.height = "";
+				
+				const underUndifned = under == undefined;
+				switch(underUndifned ? "" : under.tagName){
+					case "IMG":
 					case "P":
 						under = under.parentElement;
 					case "DIV":
 						if(under.classList.contains("drag")){
 							const parent = under.parentElement;
-							const tmpCLassList = document.createElement("div").classList;
-							tmpCLassList.add(...activeE.classList);
+							const tmpCLassList = activeE.classList.value;
 
 							activeE.classList = under.classList;
 
 							under.remove();
 
 							if(under.childElementCount > 0){
-								under.classList = tmpCLassList;
+								under.classList.value = tmpCLassList;
 
 								const lastCard = document.getElementById(lastPlace);
 								if(lastPlace != "hold") lastCard.lastElementChild.remove();
@@ -209,8 +226,8 @@ switch(quizType){
 							break;
 						}
 					default:
-						if(lastPlace == "hold" || under.id == "hold"){
-							activeE.classList = ["m"];
+						if(lastPlace == "hold" || (!underUndifned && under.id == "hold")){
+							activeE.classList.value = "m";
 							hold.appendChild(activeE);
 						}
 						else{
@@ -242,8 +259,8 @@ switch(quizType){
 				const height = window.getComputedStyle(e).height;
 
 				activeE.style.position = "fixed";
-				activeE.style.top = `${ev.pageY - (parseFloat(height)/2)}px`;
-				activeE.style.left = `${ev.pageX - (parseFloat(width)/2)}px`;
+				activeE.style.top = `${ev.clientY - (parseFloat(height)/2)}px`;
+				activeE.style.left = `${ev.clientX - (parseFloat(width)/2)}px`;
 				activeE.style.width = width;
 				activeE.style.height = height;
 				quiz.appendChild(activeE);
@@ -251,7 +268,7 @@ switch(quizType){
 				if(lastPlace == "hold"){
 					if(hold.childElementCount == 0) hold.style.height = holdBaseHeight;
 				}
-				else parent.appendChild(document.createElement("div")).classList.add("col-5", "mx-auto", "drag");
+				else parent.appendChild(document.createElement("div")).classList.value = "col-5 mx-auto drag";
 
 				document.body.style.userSelect = "none";
 			});
