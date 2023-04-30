@@ -12,7 +12,7 @@ const startIndex2 = link.indexOf("quizes/") + "quizes/".length;
 const endIndex2 = link.indexOf("/", startIndex2);
 const curName = link.substring(startIndex2, endIndex2);
 
-const curElement = data.find(e => e.name == curName);
+const curElement = data;//data.find(e => e.name == curName);
 
 const answers = curElement.good[curNum];
 
@@ -34,21 +34,6 @@ function prevLink(){
 function shuffle(base){
 	for (var i = base.children.length; i >= 0; i--) { //https://stackoverflow.com/a/11972692
 		base.appendChild(base.children[Math.random() * i | 0]);
-	}
-}
-
-function sortFix(e){
-	if(e.value != ""){
-		const parent = e.parentElement;
-		const divs = parent.parentElement.children;
-		for(var i = 0; i < divs.length; i++){
-			const div = divs[i];
-			if(div.firstElementChild.value == e.value && div != parent){
-				div.firstElementChild.oldVal = div.firstElementChild.value = e.oldVal;
-				e.oldVal = e.value;
-				return;
-			}
-		}
 	}
 }
 
@@ -76,8 +61,9 @@ function check(e){
 			break;
 		case 1: // rádió gombok
 			const radio = quiz.querySelector("input:checked");
-			good = radio.id == answers;
+			good = (radio != undefined && radio.id == answers);
 			break;
+		case 3: //sorba rakós
 		case 2: //párba rakós
 			good = true;
 			const rows = quiz.children;
@@ -89,16 +75,6 @@ function check(e){
 					break;
 				}
 			}
-			break;
-		case 3: //sorba rakós
-			const num_checks = quiz.querySelectorAll("select");
-			good = true;
-			num_checks.forEach(e => {
-				if(e.value != e.nextElementSibling.getAttribute("for")){
-					good = false;
-					return;
-				}
-			});
 			break;
 		case 4:
 			break;
@@ -123,20 +99,25 @@ function check(e){
 				});
 				break;
 			case 2: // holdHeight stored in check.holdHeight
-				const rows = quiz.children;
-				const first = rows[0].firstElementChild
+				const rowsPair = quiz.children;
+				const first = rowsPair[0].firstElementChild
 				first.innerHTML = "";
 				first.style.height = check.holdHeight;
 
-				for(var i = 1; i < rows.length; i++){
-					const row = rows[i];
+				for(var i = 1; i < rowsPair.length; i++){
+					const row = rowsPair[i];
 					const last = row.lastElementChild;
 					if(last.childElementCount == 0) last.appendChild(document.createElement("p")).innerText = answers[row.id];
 					else last.firstElementChild.innerText = answers[row.id];
 				}
 			case 3:
-				const num_checks = quiz.querySelectorAll("select");
-				num_checks.forEach(e => e.value = e.nextElementSibling.getAttribute("for"));
+				const rowsSort = quiz.children;
+
+				for(var i = 1; i < rowsSort.length; i++){
+					const row = rowsSort[i];
+					const last = row.lastElementChild;
+					last.firstElementChild.innerText = answers[row.id];
+				}
 				break;
 			case 4: // map stored in check.map
 				L.geoJSON(answers).addTo(check.map);
@@ -161,17 +142,37 @@ for(var i = 1; i <= curElement.max_page; i++){
 }
 
 switch(quizType){
-	case 2:
+	case 3: //sorrendbe rakós megkeverése
+		var drags = quiz.querySelectorAll(".drag");
+		var parents = [];
+		for (var i = 0, n = drags.length; i < n; i++) {
+			answers.push(drags[i].innerText);
+			parents.push(drags[i].parentElement);
+			drags[i].remove();
+		}
+		for (var i = 0; i < n; i++) {
+			while(true){
+				const parent = parents[Math.random() * n | 0]
+				if(!parent.lastElementChild.classList.contains("drag")){
+					parent.appendChild(drags[i]);
+					break;
+				}
+			}
+		}
+	case 2: //párosítos + sorrendbe rakós
 		function removeRun(){
 			if(onpointermove.run != undefined){
 				clearTimeout(onpointermove.run);
 				onpointermove.run = undefined;
 			}
 		}
+		
+		const isSotring = drags != undefined; // false: pairing, true: sorting
 		const hold = document.getElementById("hold");
-		const holdBaseHeight = check.holdHeight = window.getComputedStyle(hold.firstElementChild).height;
+		const holdBaseHeight = isSotring ? "" : (check.holdHeight = window.getComputedStyle(hold.firstElementChild).height);
 		var activeE = null;
 		var lastPlace = "";
+
 		onpointermove = e => {
 			function loopAfterNoMove(newUpDownScrool){
 				//newUpDownScrool = -1: up / 1: down
@@ -242,14 +243,14 @@ switch(quizType){
 				}
 
 				activeE = null;
-				lastPlace = "";
-				document.body.style.userSelect = "";
+				lastPlace = document.body.style.userSelect = "";
 			}
 		};
 
-		const lasts = quiz.querySelectorAll(".m");
-		lasts.forEach(e => {
+		const draggables = isSotring ? drags : quiz.querySelectorAll(".m");
+		draggables.forEach(e => {
 			e.addEventListener("pointerdown", ev => {
+				if(ev.button != 0) return;
 				const parent = e.parentElement;
 				lastPlace = parent.id;
 
@@ -268,22 +269,14 @@ switch(quizType){
 				if(lastPlace == "hold"){
 					if(hold.childElementCount == 0) hold.style.height = holdBaseHeight;
 				}
-				else parent.appendChild(document.createElement("div")).classList.value = "col-5 mx-auto drag";
+				else parent.appendChild(document.createElement("div")).classList.value = `col-${(isSotring?"11":"5")} mx-auto drag`;
 
 				document.body.style.userSelect = "none";
 			});
 		});
 		break;
-	case 3:
-		const temp = document.getElementById("temp");
-		for(var i = 0; i < quiz.children.length; i++){
-			const newTemp = temp.content.children[0].cloneNode(true);
-			newTemp.oldVal = "";
-			newTemp.id = i;
-			quiz.children[i].prepend(newTemp);
-		}
-	case 1: // rádió
-	case 0: // jelölő, sorrend elemek randomizálása
+	case 1: // rádió és
+	case 0: // jelölő randomizálása
 		shuffle(quiz);
 		break;
 	case 4:

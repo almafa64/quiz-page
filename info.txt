@@ -91,10 +91,12 @@ random infók:
 		5: kép kiválasztós?
 		
 
-files.js:
+scr/files.js:
 	name: topik neve
-	max_page: maximum kérdés oldalak száma
 	subs: altémák
+
+<téma>/files.js:
+	max_page: maximum kérdés oldalak száma
 	good[kérdés száma] (változik a tipus jelző alapján):
 		0, 1, 5: jó megfejtés (sorszáma / sorszámai)
 		2: blokk nevek amit párosítani kell a quiz-hez

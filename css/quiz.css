@@ -32,17 +32,17 @@ nav.nav-tabs .nav-link{
 	border-radius: 10px;
 }
 
-/* drag */
-#quiz[t="2"] .drag:has(p), #quiz[t="2"] .m{
+/* drag + sort*/
+.drag:has(p), .m{
 	touch-action: none;
 }
 
-.col-5, .m{
+.col-5, .m, .col-11, #quiz[t="3"] .col-1{
 	border: 2px solid grey;
 	border-radius: 5px;
 }
 
-.col-5 p, .m p{
+.col-5 p, .m p, .col-11 p, #quiz[t="3"] .col-1 p{
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
@@ -69,4 +69,16 @@ nav.nav-tabs .nav-link{
 .m:hover, .drag:has(p):hover{
 	background-color: lightgrey;
 	cursor: pointer;
+}
+
+/* sort */
+#quiz[t="3"] .col-1{
+	text-align: right;
+	font-size: medium;
+	padding-right: 0.5rem;
+}
+
+#quiz[t="3"] .col-11{
+	text-align: left;
+	padding-left: 0.5rem;
 }
