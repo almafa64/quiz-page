@@ -12,11 +12,9 @@ const startIndex2 = link.indexOf("quizes/") + "quizes/".length;
 const endIndex2 = link.indexOf("/", startIndex2);
 const curName = link.substring(startIndex2, endIndex2);
 
-const curElement = data;//data.find(e => e.name == curName);
+const answers = data.good[curNum];
 
-const answers = curElement.good[curNum];
-
-const curNumTooBig = (curElement.max_page == curNum+1);
+const curNumTooBig = (data.max_page == curNum+1);
 const curNumTooSmall = (curNum) <= 0;
 
 const quiz = document.getElementById("quiz");
@@ -35,6 +33,18 @@ function shuffle(base){
 	for (var i = base.children.length; i >= 0; i--) { //https://stackoverflow.com/a/11972692
 		base.appendChild(base.children[Math.random() * i | 0]);
 	}
+}
+
+function four(n){
+	const s = n+"";
+	var tmp = "";
+	for(var i = 0, n = s.length; i < n; i++){
+		const char = s[i];
+		if(char == "." || char == ",") n = i + 5;
+		else if(char == undefined) break;
+		tmp += char;
+	}
+	return parseFloat(tmp);
 }
 
 function check(e){
@@ -76,7 +86,14 @@ function check(e){
 				}
 			}
 			break;
-		case 4:
+		case 4: //map (map stored in check.map) //temporary
+			for(const [key, layer] of Object.entries(check.map._layers)){
+				if(layer._latlng != undefined){
+					const latlng = layer._latlng;
+					good = (four(latlng.lat) == four(answers[0].coordinates[1]) && four(latlng.lng) == four(answers[0].coordinates[0]));
+					break;
+				}
+			}
 			break;
 		case 5:
 			break;
@@ -113,7 +130,7 @@ function check(e){
 			case 3:
 				const rowsSort = quiz.children;
 
-				for(var i = 1; i < rowsSort.length; i++){
+				for(var i = 0; i < rowsSort.length; i++){
 					const row = rowsSort[i];
 					const last = row.lastElementChild;
 					last.firstElementChild.innerText = answers[row.id];
@@ -133,7 +150,7 @@ else next.addEventListener("click", nextLink);
 if(curNumTooSmall) prev.disabled = true;
 else prev.addEventListener("click", prevLink);
 
-for(var i = 1; i <= curElement.max_page; i++){
+for(var i = 1; i <= data.max_page; i++){
 	const div = jump.appendChild(document.createElement("div"));
 	div.classList.value = "p-sm-2 px-sm-3 p-1 px-2 mx-sm-2 mx-1";
 	const a = div.appendChild(document.createElement("a"));
@@ -284,6 +301,12 @@ switch(quizType){
 			center: [47.487667, 19.080785],
 			zoom: 11.2,
 			worldCopyJump: true,
+			doubleClickZoom: false,
+		}).on('dblclick', (e) => {
+			L.marker([four(e.latlng.lat), four(e.latlng.lng)]).addTo(map);
+			/*var info = prompt("info? (optional)");
+			if(info==null) info = "";
+			addMarker(`${e.latlng.lat},${e.latlng.lng}`, info);*/
 		});
 
 		check.map = map;

@@ -11,3 +11,31 @@ nav.nav-tabs{
 nav.nav-tabs .nav-link{
 	border-radius: 0;
 }
+
+#mainContainer.container-fluid{
+	min-height: 100vh;
+}
+
+footer{
+	height: 100%;
+	text-align: center;
+	position: relative;
+	bottom: 0;
+	width: 100%;
+	padding-bottom: 1px;
+}
+
+footer .mid{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+footer .col-12{
+	border: 2px solid #151515;
+}
+
+footer .row{
+	background-color: #e9ecef;
+	margin: 0 -15px;
+}

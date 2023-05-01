@@ -74,7 +74,7 @@ nav.nav-tabs .nav-link{
 /* sort */
 #quiz[t="3"] .col-1{
 	text-align: right;
-	font-size: medium;
+	font-size: 1rem;
 	padding-right: 0.5rem;
 }
 
