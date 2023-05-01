@@ -22,11 +22,15 @@ const quizType = parseInt(quiz.getAttribute("t"));
 
 const jump = document.getElementById("jump");
 
+var points = parseInt(new URLSearchParams(window.location.search).get('p'));
+if(isNaN(points) || points < 0) points = 0;
+window.history.replaceState(null, "", `../../quizes/${curName}/${curNum+1}.html`);
+
 function nextLink(){
-	window.location.href = `../../quizes/${curName}/${curNum+2}.html`;
+	window.location.href = `../../quizes/${curName}/${curNum+2}.html?p=${points+1}`;
 }
 function prevLink(){
-	window.location.href = `../../quizes/${curName}/${curNum}.html`;
+	window.location.href = `../../quizes/${curName}/${curNum}.html?p=${points-1}`;
 }
 
 function shuffle(base){
@@ -35,7 +39,11 @@ function shuffle(base){
 	}
 }
 
-function four(n){
+window.addEventListener('hashchange', function () {
+   alert('location changed!');
+});
+
+function four(n){ //temporary
 	const s = n+"";
 	var tmp = "";
 	for(var i = 0, n = s.length; i < n; i++){
@@ -52,6 +60,7 @@ function check(e){
 		alert("jó válasz");
 		e.style.display = "none";
 		next.style.display = "";
+		if(next.disabled) alert(`Pontjaid: ${points+1}`);
 	}
 
 	var good = false;
@@ -127,6 +136,7 @@ function check(e){
 					if(last.childElementCount == 0) last.appendChild(document.createElement("p")).innerText = answers[row.id];
 					else last.firstElementChild.innerText = answers[row.id];
 				}
+				break;
 			case 3:
 				const rowsSort = quiz.children;
 
