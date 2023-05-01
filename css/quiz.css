@@ -68,7 +68,7 @@ nav.nav-tabs .nav-link{
 
 .m:hover, .drag:has(p):hover{
 	background-color: lightgrey;
-	cursor: pointer;
+	cursor: grab;
 }
 
 /* sort */

@@ -22,15 +22,19 @@ const quizType = parseInt(quiz.getAttribute("t"));
 
 const jump = document.getElementById("jump");
 
+var localPoints = 0;
 var points = parseInt(new URLSearchParams(window.location.search).get('p'));
 if(isNaN(points) || points < 0) points = 0;
+var localErrors = 0;
+var errors = parseInt(new URLSearchParams(window.location.search).get('e'));
+if(isNaN(errors) || errors < 0) errors = 0;
 window.history.replaceState(null, "", `../../quizes/${curName}/${curNum+1}.html`);
 
 function nextLink(){
-	window.location.href = `../../quizes/${curName}/${curNum+2}.html?p=${points+1}`;
+	window.location.href = `../../quizes/${curName}/${curNum+2}.html?p=${points+localPoints}&e=${errors+localErrors}`;
 }
 function prevLink(){
-	window.location.href = `../../quizes/${curName}/${curNum}.html?p=${points-1}`;
+	window.location.href = `../../quizes/${curName}/${curNum}.html?p=${points}&e=${errors}`;
 }
 
 function shuffle(base){
@@ -60,7 +64,13 @@ function check(e){
 		alert("jó válasz");
 		e.style.display = "none";
 		next.style.display = "";
-		if(next.disabled) alert(`Pontjaid: ${points+1}`);
+		localPoints = 1;
+		if(next.disabled){
+			const bad = localErrors + errors;
+			const good= localPoints + points;
+			alert(`Pontjaid: ${good}\nHibáid: ${bad}\nEredmény: ${(good - bad) / data.max_page * 100}%`);
+			if(confirm("Vissza szeretnél térni a főoldalra?")) window.location.href = "../../index.html";
+		}
 	}
 
 	var good = false;
@@ -109,48 +119,51 @@ function check(e){
 	}
 	
 	if(good) goodFinish();
-	else if(confirm("Rossz válasz!\nSzabad a gazda?")){
-		switch(quizType){
-			case 0:
-				const checks = quiz.querySelectorAll("input");
-				checks.forEach(e => e.checked = answers.includes(parseInt(e.id)));
-				break;
-			case 1:
-				const radios = quiz.querySelectorAll("input");
-				radios.forEach(e => {
-					if(e.id == answers){
-						e.checked = true;
-						return;
+	else{
+		localErrors++;
+		if(confirm("Rossz válasz!\nSzabad a gazda?")){
+			switch(quizType){
+				case 0:
+					const checks = quiz.querySelectorAll("input");
+					checks.forEach(e => e.checked = answers.includes(parseInt(e.id)));
+					break;
+				case 1:
+					const radios = quiz.querySelectorAll("input");
+					radios.forEach(e => {
+						if(e.id == answers){
+							e.checked = true;
+							return;
+						}
+					});
+					break;
+				case 2: // holdHeight stored in check.holdHeight
+					const rowsPair = quiz.children;
+					const first = rowsPair[0].firstElementChild
+					first.innerHTML = "";
+					first.style.height = check.holdHeight;
+	
+					for(var i = 1; i < rowsPair.length; i++){
+						const row = rowsPair[i];
+						const last = row.lastElementChild;
+						if(last.childElementCount == 0) last.appendChild(document.createElement("p")).innerText = answers[row.id];
+						else last.firstElementChild.innerText = answers[row.id];
 					}
-				});
-				break;
-			case 2: // holdHeight stored in check.holdHeight
-				const rowsPair = quiz.children;
-				const first = rowsPair[0].firstElementChild
-				first.innerHTML = "";
-				first.style.height = check.holdHeight;
-
-				for(var i = 1; i < rowsPair.length; i++){
-					const row = rowsPair[i];
-					const last = row.lastElementChild;
-					if(last.childElementCount == 0) last.appendChild(document.createElement("p")).innerText = answers[row.id];
-					else last.firstElementChild.innerText = answers[row.id];
-				}
-				break;
-			case 3:
-				const rowsSort = quiz.children;
-
-				for(var i = 0; i < rowsSort.length; i++){
-					const row = rowsSort[i];
-					const last = row.lastElementChild;
-					last.firstElementChild.innerText = answers[row.id];
-				}
-				break;
-			case 4: // map stored in check.map
-				L.geoJSON(answers).addTo(check.map);
-				break;
+					break;
+				case 3:
+					const rowsSort = quiz.children;
+	
+					for(var i = 0; i < rowsSort.length; i++){
+						const row = rowsSort[i];
+						const last = row.lastElementChild;
+						last.firstElementChild.innerText = answers[row.id];
+					}
+					break;
+				case 4: // map stored in check.map
+					L.geoJSON(answers).addTo(check.map);
+					break;
+			}
+			setTimeout(goodFinish, 50);
 		}
-		setTimeout(goodFinish, 50);
 	}
 }
 
@@ -166,6 +179,9 @@ for(var i = 1; i <= data.max_page; i++){
 	const a = div.appendChild(document.createElement("a"));
 	a.href = `../../quizes/${curName}/${i}.html`;
 	a.innerText = `${i}.`;
+	a.addEventListener("click", e => {
+		a.href += (parseInt(a.innerText) <= curNum + 1) ? `?p=${points}&e=${errors}` : `?p=${points + localPoints}&e=${errors + localErrors}`;
+	});
 }
 
 switch(quizType){
@@ -283,12 +299,16 @@ switch(quizType){
 
 				activeE = e;
 				
-				const width = window.getComputedStyle(e).width;
-				const height = window.getComputedStyle(e).height;
+				const style = window.getComputedStyle(e);
+				const height = style.height;
+				const width = style.width;
+				const rect = e.getBoundingClientRect();
 
 				activeE.style.position = "fixed";
-				activeE.style.top = `${ev.clientY - (parseFloat(height)/2)}px`;
-				activeE.style.left = `${ev.clientX - (parseFloat(width)/2)}px`;
+				/*activeE.style.top = `${ev.clientY - (parseFloat(height)/2)}px`; //snap to center
+				activeE.style.left = `${ev.clientX - (parseFloat(width)/2)}px`;*/
+				activeE.style.top = `${rect.top}px`; //snap to mouse
+				activeE.style.left= `${rect.left}px`;
 				activeE.style.width = width;
 				activeE.style.height = height;
 				quiz.appendChild(activeE);
