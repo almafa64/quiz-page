@@ -34,7 +34,7 @@ function nextLink(){
 	window.location.href = `../../quizes/${curName}/${curNum+2}.html?p=${points+localPoints}&e=${errors+localErrors}`;
 }
 function prevLink(){
-	window.location.href = `../../quizes/${curName}/${curNum}.html?p=${points}&e=${errors}`;
+	window.location.href = `../../quizes/${curName}/${curNum}.html`; //`../../quizes/${curName}/${curNum}.html?p=${points}&e=${errors}`;
 }
 
 function shuffle(base){
@@ -179,8 +179,8 @@ for(var i = 1; i <= data.max_page; i++){
 	const a = div.appendChild(document.createElement("a"));
 	a.href = `../../quizes/${curName}/${i}.html`;
 	a.innerText = `${i}.`;
-	a.addEventListener("click", e => {
-		a.href += (parseInt(a.innerText) <= curNum + 1) ? `?p=${points}&e=${errors}` : `?p=${points + localPoints}&e=${errors + localErrors}`;
+	a.addEventListener("click", () => {
+		a.href += (parseInt(a.innerText) <= curNum + 1) ? "" /*`?p=${points}&e=${errors}`*/ : `?p=${points + localPoints}&e=${errors + localErrors}`;
 	});
 }
 
@@ -271,7 +271,7 @@ switch(quizType){
 						}
 					default:
 						if(lastPlace == "hold" || (!underUndifned && under.id == "hold")){
-							activeE.classList.value = "m";
+							activeE.classList.value = "drag";
 							hold.appendChild(activeE);
 						}
 						else{
@@ -290,8 +290,8 @@ switch(quizType){
 			}
 		};
 
-		const draggables = isSotring ? drags : quiz.querySelectorAll(".m");
-		draggables.forEach(e => {
+		if(!isSotring) drags = hold.querySelectorAll(".drag");
+		drags.forEach(e => {
 			e.addEventListener("pointerdown", ev => {
 				if(ev.button != 0) return;
 				const parent = e.parentElement;

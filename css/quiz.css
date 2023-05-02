@@ -33,28 +33,26 @@ nav.nav-tabs .nav-link{
 }
 
 /* drag + sort*/
-.drag:has(p), .m{
+.drag:has(p){
 	touch-action: none;
 }
 
-.col-5, .m, .col-11, #quiz[t="3"] .col-1{
+.col-5, .drag, .col-11, #quiz[t="3"] .col-1{
 	border: 2px solid grey;
 	border-radius: 5px;
 }
 
-.col-5 p, .m p, .col-11 p, #quiz[t="3"] .col-1 p{
+.col-5 p, .drag p, .col-11 p, #quiz[t="3"] .col-1 p{
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
-}
-
-.mx-auto, .m{
 	text-align: center;
 }
 
 .col-1{
 	font-size: 3rem;
 	padding: 0;
+	text-align: center;
 }
 
 #hold{
@@ -62,11 +60,11 @@ nav.nav-tabs .nav-link{
 	margin: 0 1.2vw; /* cheating */
 }
 
-.m{
+#hold .drag{
 	padding: 0 10px;
 }
 
-.m:hover, .drag:has(p):hover{
+.drag:has(p):hover{
 	background-color: lightgrey;
 	cursor: grab;
 }
