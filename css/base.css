@@ -1,19 +1,4 @@
-ol { /*https://stackoverflow.com/a/21909808*/
-	counter-reset: section;
-	list-style-type: none;
-}
-  
-li:before { /*https://stackoverflow.com/a/21909808*/
-	counter-increment: section;
-	content: counters(section, ".") ", ";
-}
-
-.jumbotron h1{
-	text-align: center;
-	font-size: 3rem;
-}
-
-/*nav.nav-tabs{
+nav.nav-tabs{
 	background-color: lightcoral;
 	padding: 2px 0 0 3px;
 	margin-bottom: 10px;
@@ -49,4 +34,4 @@ footer .col-12{
 footer .row{
 	background-color: #e9ecef;
 	margin: 0 -15px;
-}*/
+}
