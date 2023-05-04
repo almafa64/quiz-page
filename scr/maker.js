@@ -49,7 +49,7 @@ function save(){
 	});
 	send = send.slice(0, -1);
 	
-	fetch(`/save?t=${quizType}&n=${topicName}&q=${quizNum}`, {
+	fetch(`/quiz?t=${quizType}&n=${topicName}&q=${quizNum}`, {
 		method: 'POST',
 		headers: {
 			'Accept': 'text/plain',
