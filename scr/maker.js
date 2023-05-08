@@ -8,21 +8,33 @@ const topicListName = document.getElementById("topicName");
 const quizList = document.getElementById("question");
 const quizListName = document.getElementById("questionName");
 
-const dataScript = document.createElement("script");
-const filesScript = document.createElement("script");
+var dataScript = null;
+var filesScript = null;
 
-var quizType = NaN;   // will be set
-var topicName = "test"; // will be set
-var quizNum = 0;  // will be set
+var quizType = NaN;
+var topicName = "";
+var quizNum = 0;
 
 var files = [];
 
+function multiIndex(array, index){
+	const indexes = index.split(",");
+	for(var i = 0; i < indexes.length; i++){
+		array = array[indexes[i]];
+	}
+	return array;
+}
+
 function loadThings(loadFiles = true, loadTopics = false){
 	if(loadFiles){
+		if(dataScript != null) dataScript.remove();
+		dataScript = document.createElement("script");
+		
 		dataScript.src = `/quizes/${topicName}/files.js`;
 		document.body.appendChild(dataScript);
 		dataScript.onload = () => {
 			console.log(data);
+
 			data.good.forEach((e,i) => {
 				const tmp = quizList.appendChild(document.createElement("option"));
 				tmp.value = i;
@@ -32,18 +44,30 @@ function loadThings(loadFiles = true, loadTopics = false){
 	}
 
 	if(loadTopics){
+		if(filesScript != null) filesScript.remove();
+		filesScript = document.createElement("script");
+
 		filesScript.src = "/scr/files.js";
 		document.body.appendChild(filesScript);
 		filesScript.onload = () => {
-			/*
-			test
-			test/sub1
-			test/sub1/subsub1
-			test/sub1/subsub2
-			test/sub1/subsub2/subsubsub1
-			test/sub2
-			*/
-			console.log(files);
+			var indexes = [0];
+
+			function recuresion(top, list){
+				const tmp = topicList.appendChild(document.createElement("option"));
+				
+				tmp.value = `${indexes}`;
+				tmp.innerText = top;
+
+				if(list.length != 0){
+					indexes.push(0);
+					list.forEach(e => recuresion(`${top}/${e.name}`, e.subs));
+					indexes.pop();
+				}
+
+				indexes[indexes.length - 1]++;
+			}
+
+			files.forEach(e => recuresion(e.name, e.subs));
 		};
 	}
 }
@@ -100,13 +124,21 @@ function changeType(){
 }
 
 function changeTopic(){
+	const empty = quizList.firstElementChild;
+	hold.innerHTML = quizListName.value = quizList.innerHTML = "";
+	quizList.appendChild(empty);
+
 	if(topicList.value != ""){
-		const file = files[parseInt(topicList.value)]; //json parse + looping -> sub1sub2sub3 = [0,1,2], sub2sub3sub1 = [1,2,0]
-		topicListName.value = topicName = file.name;
+		//const file = files[parseInt(topicList.value)]; //json parse + looping -> sub1sub2sub3 = [0,1,2], sub2sub3sub1 = [1,2,0]
+		const text = topicList.selectedOptions[0].innerText;
+		topicName = text.replace(/(?<!\\)\//gi, "_");
+		topicListName.value = text;
 		loadThings();
+		saveBut.disabled = false;
 	}
 	else{
 		topicListName.value = topicName = "";
+		saveBut.disabled = true;
 	}
 }
 
@@ -197,7 +229,7 @@ function save(){
 				case 4:
 					break;
 			}
-			const json = `const data={"max_page":${(data.max_page < quizNum) ? quizNum : data.max_page},"good":${JSON.stringify(data.good)}}`;
+			const json = `const data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
 
 			fetch(`/save?n=${topicName}&q=${quizNum}`, {
 				method: 'POST',

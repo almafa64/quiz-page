@@ -292,7 +292,12 @@ switch(quizType){
 			}
 		};
 
-		if(!isSotring) drags = hold.querySelectorAll(".drag");
+		if(!isSotring) {
+			drags = hold.querySelectorAll(".drag");
+			hold.parentElement.remove();
+			shuffle(quiz);
+			quiz.prepend(hold.parentElement);
+		}
 		drags.forEach(e => {
 			e.addEventListener("pointerdown", ev => {
 				if(ev.button != 0) return;

@@ -1,1 +1,1 @@
-const data={"max_page":1,"good":[[{"type":"Point","coordinates":[19.119271469945833,47.49013716313074]}]]}
+var data={"max_page":1,"good":[[{"type":"Point","coordinates":[19.119271469945833,47.49013716313074]}]]}
