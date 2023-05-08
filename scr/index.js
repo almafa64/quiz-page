@@ -52,6 +52,6 @@ function createListItem(data, currentOl){
 	}
 }
 
-data.forEach(e => {
+files.forEach(e => {
 	createListItem(e, test);
 })

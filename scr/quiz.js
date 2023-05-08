@@ -1,3 +1,5 @@
+if(window.frameElement != null) throw new Error("Here we stop");
+
 const next = document.getElementById("next");
 next.style.display = "none";
 

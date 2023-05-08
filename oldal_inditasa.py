@@ -2,6 +2,7 @@ import http.server
 import socketserver
 import webbrowser
 from urllib.parse import urlparse
+import json
 
 class m(http.server.SimpleHTTPRequestHandler):
 	def do_GET(self):
@@ -11,17 +12,16 @@ class m(http.server.SimpleHTTPRequestHandler):
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length).decode('utf-8')
+		post_json = json.loads(post_data)
 		print(post_data)
-		things = urlparse(self.path)
-		queries = dict(x.split("=") for x in things.query.split("&"))
+		queries = dict(x.split("=") for x in urlparse(self.path).query.split("&"))
+		quiz_num = queries["q"]
+		topic_name = queries["n"]
 		print(queries)
-		path = things.path
-		if path == "/quiz":
-			quiz_type = queries["t"]
-			quiz_num = queries["q"]
-			topic_name = queries["n"]
-		elif path == "/topic":
-			pass
+		with open(f"quizes\\{topic_name}\\files.js", "w", encoding="utf-8") as f:
+			f.write(post_json[1])
+		with open(f"quizes\\{topic_name}\\{int(quiz_num)+1}.html", "w", encoding="utf-8") as f:
+			f.write(post_json[0])
 		#with open("scr\\files.js", "w") as f:
 		#	f.write("const data=" + post_data)
 		self.send_response(200)

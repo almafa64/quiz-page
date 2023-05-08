@@ -19,6 +19,23 @@
 
 		<main>
 			<form>
+				<label for="topic">Téma: </label>
+				<select id="topic" onchange="changeTopic()">
+					<option value="" selected>-</option>
+					<option value="0">minecraft</option>
+					<option value="1">random földrajz</option>
+					<option value="2">test</option>
+				</select><br>
+				<label for="topicName">Téma neve: </label>
+				<input type="text" id="topicName"><br>
+
+				<label for="question">Kérdés száma: </label>
+				<select id="question" onchange="changeQuiz()">
+					<option value="" selected>-</option>
+				</select><br>
+				<label for="questionName">Kérdés szövege: </label>
+				<input type="text" id="questionName"><br>
+
 				<label for="type">tipus</label>
 				<select id="type" onchange="changeType()">
 					<option value="" selected>-</option>
@@ -58,6 +75,8 @@
 			</div>
 		</footer>
 	</div>
+
+	<iframe id="webHold" hidden></iframe>
 
 	<script src="scr/maker.js"></script>
 </body>
