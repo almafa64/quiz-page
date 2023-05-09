@@ -11,18 +11,36 @@ const quizListName = document.getElementById("questionName");
 var dataScript = null;
 var filesScript = null;
 
-var quizType = NaN;
+var quizType = -1;
 var topicName = "";
-var quizNum = 0;
+var quizNum = -1;
 
 var files = [];
 
+function last(array){
+	return array[array.length - 1];
+}
+
+function encodeSlash(text){
+	return text.replace(/(?<!\\)\//gi, "_");
+}
+
 function multiIndex(array, index){
 	const indexes = index.split(",");
+	var parent;
+	
+	if(indexes.length == 1){
+		parent = array;
+	}
+
 	for(var i = 0; i < indexes.length; i++){
 		array = array[indexes[i]];
+		if(i != indexes.length - 1){
+			array = array.subs;
+			if(i == indexes.length - 2) parent = array;
+		}
 	}
-	return array;
+	return {element: array, parent: parent};
 }
 
 function loadThings(loadFiles = true, loadTopics = false){
@@ -120,25 +138,24 @@ function addRow(leftText = "", rightText = "", selected = false){
 function changeType(){
 	quizType = parseInt(type.value);
 	hold.innerHTML = "";
-	saveBut.disabled = !addRow();
+	addRow();
 }
 
 function changeTopic(){
 	const empty = quizList.firstElementChild;
-	hold.innerHTML = quizListName.value = quizList.innerHTML = "";
+	type.value = hold.innerHTML = quizListName.value = quizList.innerHTML = "";
 	quizList.appendChild(empty);
 
 	if(topicList.value != ""){
-		//const file = files[parseInt(topicList.value)]; //json parse + looping -> sub1sub2sub3 = [0,1,2], sub2sub3sub1 = [1,2,0]
 		const text = topicList.selectedOptions[0].innerText;
-		topicName = text.replace(/(?<!\\)\//gi, "_");
+		topicName = encodeSlash(text);
 		topicListName.value = text;
 		loadThings();
-		saveBut.disabled = false;
+		quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = false;
 	}
 	else{
 		topicListName.value = topicName = "";
-		saveBut.disabled = true;
+		quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = true;
 	}
 }
 
@@ -187,10 +204,74 @@ function changeQuiz(){
 	}
 }
 
+topicListName.oninput = (e) => {
+	var text = topicListName.value;
+	if(last(text) == "_") {
+		alert('Nem lehet "_" a téma névben');
+		text = text.slice(0, -1);
+	}
+
+	if(text.length == 0){
+		quizList.disabled = quizListName.disabled = type.disabled = true;
+		if(topicList.value == "") saveBut.disabled = true;
+		else{
+			const empty = quizList.firstElementChild;
+			type.value = hold.innerHTML = quizListName.value = quizList.innerHTML = "";
+			quizList.appendChild(empty);
+		}
+	}
+	else if(text.length = 1) {
+		quizList.disabled = quizListName.disabled = type.disabled = false;
+		if(topicList.value == "") saveBut.disabled = false;
+	}
+}
+
+/*quizListName.oninput = (e) => {
+	
+}*/
+
 function save(){
 	function templateWrite(template, func){
-		iframe.src = template;
+		iframe.src = `/template/${template}.html`;
 		iframe.onload = () => {
+			var newTopicName = topicListName.value;
+			if(newTopicName.length == 0) multiIndex(files, topicList.value).parent.splice(last(topicList.value), 1);
+			else if(last(newTopicName) == "/") return alert('Nem lehet "/" a téma név végén');
+			else if(newTopicName[0] == "/") return alert('Nem lehet "/" a téma név elején');
+			else if(/([/])\1+/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett');
+			else {
+				/*const finded = multiIndex(files, topicList.value);
+				const element = finded.element;
+				const newPath = newTopicName.split("/");
+				var tmpFiles = files;
+				for(var i = 0; i < newPath.length; i++){
+					const tmpNewPath = newPath[i];
+					if(i == newPath.length - 1){
+						const tmp = tmpFiles.find(e => e.name == tmpNewPath);
+						if(tmp == undefined) tmpFiles = {name: tmpNewPath, subs: []};
+						else tmpFiles = tmp;
+						//finded.parent.splice(last(topicList.value), 1);
+					}
+					else{
+						const tmp = tmpFiles.find(e => e.name == tmpNewPath);
+						if(tmp == undefined) return alert(`Elérési útvonal "${tmpNewPath}" nem létezik`); //insert into files
+						tmpFiles = tmp.subs;
+					}
+				}*/
+			}
+
+			console.log(files);
+
+			if(template == "blank"){
+				fetch(`/save?n=${topicName}?sM=0`, {
+					method: 'POST',
+					body: JSON.stringify([null, null, files])
+				})
+				//.then(() => window.location.reload())
+				.catch(err => console.error(err));
+				return;
+			}
+
 			iframe.contentDocument.getElementById("question").innerText = document.getElementById("questionName").value; //"" -> remove selected, selected != this -> change selected
 			iframe.contentDocument.getElementsByTagName("title")[0].innerText = `${quizNum+1}. Kérdés`;
 
@@ -233,7 +314,7 @@ function save(){
 
 			fetch(`/save?n=${topicName}&q=${quizNum}`, {
 				method: 'POST',
-				body: JSON.stringify([html, json])
+				body: JSON.stringify([html, json, files])
 			})
 			//.then(() => window.location.reload())
 			.catch(err => console.error(err));
@@ -254,15 +335,20 @@ function save(){
 		});
 	}
 
+	if(quizType == -1){
+		templateWrite("blank", () => {});
+		return;	
+	}
+
 	switch(quizType){
 		case 0:
-			templateWrite("/templates/checkbox.html", (iframeQuiz, textAreas) => basicType("checkbox", iframeQuiz, textAreas));
+			templateWrite("checkbox", (iframeQuiz, textAreas) => basicType("checkbox", iframeQuiz, textAreas));
 			break;
 		case 1:
-			templateWrite("/templates/radio.html", (iframeQuiz, textAreas) => basicType("radio", iframeQuiz, textAreas));
+			templateWrite("radio", (iframeQuiz, textAreas) => basicType("radio", iframeQuiz, textAreas));
 			break;
 		case 2:
-			templateWrite("/templates/pair.html", (iframeQuiz, textAreas) => {
+			templateWrite("pair", (iframeQuiz, textAreas) => {
 				const iframHold = iframeQuiz.querySelector("#hold");
 				for(var i = 0; i < textAreas.length; i+=2){
 					const mainDiv = iframeQuiz.appendChild(document.createElement("div"));
@@ -287,7 +373,7 @@ function save(){
 			});
 			break;
 		case 3:
-			templateWrite("/templates/order.html", (iframeQuiz, textAreas) => {
+			templateWrite("order", (iframeQuiz, textAreas) => {
 				textAreas.forEach((e, i) => {
 					const mainDiv = iframeQuiz.appendChild(document.createElement("div"));
 					const numDiv = mainDiv.appendChild(document.createElement("div"));
@@ -305,7 +391,7 @@ function save(){
 			});
 			break;
 		case 4:
-			templateWrite("/templates/map.html", (iframeQuiz) => {
+			templateWrite("map", (iframeQuiz) => {
 				
 			});
 			break;

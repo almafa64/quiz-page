@@ -5,3 +5,7 @@ textarea{
 input[type="text"]{
 	width: 70vw;
 }
+
+:disabled{
+	cursor: not-allowed;
+}

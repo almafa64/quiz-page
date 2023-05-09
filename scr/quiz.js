@@ -25,10 +25,11 @@ const quizType = parseInt(quiz.getAttribute("t"));
 const jump = document.getElementById("jump");
 
 var localPoints = 0;
-var points = parseInt(new URLSearchParams(window.location.search).get('p'));
+const params = new URLSearchParams(window.location.search);
+var points = parseInt(params.get('p'));
 if(isNaN(points) || points < 0) points = 0;
 var localErrors = 0;
-var errors = parseInt(new URLSearchParams(window.location.search).get('e'));
+var errors = parseInt(params.get('e'));
 if(isNaN(errors) || errors < 0) errors = 0;
 window.history.replaceState(null, "", `../../quizes/${curName}/${curNum+1}.html`);
 
