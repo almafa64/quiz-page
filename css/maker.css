@@ -2,7 +2,7 @@ textarea{
 	resize: both;
 }
 
-input[type="text"]{
+input[type="text"], #topicDesc{
 	width: 70vw;
 }
 

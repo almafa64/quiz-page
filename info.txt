@@ -94,6 +94,7 @@ random infók:
 scr/files.js:
 	name: topik neve
 	subs: altémák
+	no: 1 -> link nem elérhető
 
 <téma>/files.js:
 	max_page: maximum kérdés oldalak száma
@@ -101,3 +102,9 @@ scr/files.js:
 		0, 1, 5: jó megfejtés (sorszáma / sorszámai)
 		2: blokk nevek amit párosítani kell a quiz-hez
 		4: [{"type":"Feature","geometry":{"type":"Point","coordinates":[lng, lat]}}, stb]
+
+
+python sM:
+	"0": téma törlése, csak scr/files.js írás
+	"1": normál, minden küldése (<téma>/<quiz>.html, <téma>/files.js, scr/files.js)
+	"2": 

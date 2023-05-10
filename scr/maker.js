@@ -5,6 +5,7 @@ const iframe = document.getElementById("webHold");
 
 const topicList = document.getElementById("topic");
 const topicListName = document.getElementById("topicName");
+const topicDesc = document.getElementById("topicDesc");
 const quizList = document.getElementById("question");
 const quizListName = document.getElementById("questionName");
 
@@ -143,7 +144,7 @@ function changeType(){
 
 function changeTopic(){
 	const empty = quizList.firstElementChild;
-	type.value = hold.innerHTML = quizListName.value = quizList.innerHTML = "";
+	topicDesc.value = type.value = hold.innerHTML = quizListName.value = quizList.innerHTML = "";
 	quizList.appendChild(empty);
 
 	if(topicList.value != ""){
@@ -151,11 +152,11 @@ function changeTopic(){
 		topicName = encodeSlash(text);
 		topicListName.value = text;
 		loadThings();
-		quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = false;
+		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = false;
 	}
 	else{
 		topicListName.value = topicName = "";
-		quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = true;
+		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = true;
 	}
 }
 
@@ -212,16 +213,11 @@ topicListName.oninput = (e) => {
 	}
 
 	if(text.length == 0){
-		quizList.disabled = quizListName.disabled = type.disabled = true;
+		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = true;
 		if(topicList.value == "") saveBut.disabled = true;
-		else{
-			const empty = quizList.firstElementChild;
-			type.value = hold.innerHTML = quizListName.value = quizList.innerHTML = "";
-			quizList.appendChild(empty);
-		}
 	}
-	else if(text.length = 1) {
-		quizList.disabled = quizListName.disabled = type.disabled = false;
+	else if(text.length == 1) {
+		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = false;
 		if(topicList.value == "") saveBut.disabled = false;
 	}
 }
@@ -232,47 +228,60 @@ topicListName.oninput = (e) => {
 
 function save(){
 	function templateWrite(template, func){
-		iframe.src = `/template/${template}.html`;
+		iframe.src = `/templates/${template}.html`;
 		iframe.onload = () => {
 			var newTopicName = topicListName.value;
-			if(newTopicName.length == 0) multiIndex(files, topicList.value).parent.splice(last(topicList.value), 1);
+			if(newTopicName.length == 0) multiIndex(files, topicList.value).parent.splice(last(topicList.value), 1); // send delete request to server
 			else if(last(newTopicName) == "/") return alert('Nem lehet "/" a téma név végén');
 			else if(newTopicName[0] == "/") return alert('Nem lehet "/" a téma név elején');
 			else if(/([/])\1+/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett');
 			else {
-				/*const finded = multiIndex(files, topicList.value);
-				const element = finded.element;
+				const finded = multiIndex(files, topicList.value);
 				const newPath = newTopicName.split("/");
 				var tmpFiles = files;
-				for(var i = 0; i < newPath.length; i++){
-					const tmpNewPath = newPath[i];
-					if(i == newPath.length - 1){
-						const tmp = tmpFiles.find(e => e.name == tmpNewPath);
-						if(tmp == undefined) tmpFiles = {name: tmpNewPath, subs: []};
-						else tmpFiles = tmp;
-						//finded.parent.splice(last(topicList.value), 1);
+
+				for(var i = 0, n = newPath.length; i < n; i++){
+					const currentPath = newPath[i];
+					const currentFile = tmpFiles.find(e => e.name == currentPath);
+					console.log(currentFile, currentPath);
+					if(i == n - 1){
+						const t = topicName.split("_");
+						if(!newPath.some(e => t.includes(e))) finded.parent.splice(last(topicList.value), 1);
+
+						if(currentFile == undefined) {
+							tmpFiles.push({name: currentPath, subs: [], no: 1}); // set no by inputs (has description or quizes)
+						}
+						else{
+							// set no by inputs (has description or quizes)
+						}
+
+						topicName = currentPath;
 					}
 					else{
-						const tmp = tmpFiles.find(e => e.name == tmpNewPath);
-						if(tmp == undefined) return alert(`Elérési útvonal "${tmpNewPath}" nem létezik`); //insert into files
-						tmpFiles = tmp.subs;
+						if(currentFile == undefined) {
+							tmpFiles.push({name: currentPath, subs: [], no: 1});
+							tmpFiles = last(tmpFiles).subs;
+						}
+						else tmpFiles = currentFile.subs;
 					}
-				}*/
+				}
 			}
 
 			console.log(files);
+			
+			const updatedFiles = "var files=" + JSON.stringify(files);
 
-			if(template == "blank"){
-				fetch(`/save?n=${topicName}?sM=0`, {
+			if(template == "empty"){
+				fetch(`/save?n=${topicName}&m=0`, {
 					method: 'POST',
-					body: JSON.stringify([null, null, files])
+					body: updatedFiles
 				})
 				//.then(() => window.location.reload())
 				.catch(err => console.error(err));
 				return;
 			}
 
-			iframe.contentDocument.getElementById("question").innerText = document.getElementById("questionName").value; //"" -> remove selected, selected != this -> change selected
+			iframe.contentDocument.getElementById("question").innerText = document.getElementById("questionName").value;
 			iframe.contentDocument.getElementsByTagName("title")[0].innerText = `${quizNum+1}. Kérdés`;
 
 			const quiz = iframe.contentDocument.getElementById("quiz");
@@ -312,9 +321,9 @@ function save(){
 			}
 			const json = `const data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
 
-			fetch(`/save?n=${topicName}&q=${quizNum}`, {
+			fetch(`/save?n=${topicName}&q=${quizNum}&m=1`, {
 				method: 'POST',
-				body: JSON.stringify([html, json, files])
+				body: JSON.stringify([html, json, updatedFiles])
 			})
 			//.then(() => window.location.reload())
 			.catch(err => console.error(err));
@@ -336,7 +345,7 @@ function save(){
 	}
 
 	if(quizType == -1){
-		templateWrite("blank", () => {});
+		templateWrite("empty", () => {});
 		return;	
 	}
 

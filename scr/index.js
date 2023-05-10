@@ -39,7 +39,7 @@ function createListItem(data, currentOl, newText){
 	const a = newList.appendChild(document.createElement("a"));
 	a.innerText = data.name;
 
-	a.href = `quizes/${newText + data.name}/index.html`;
+	if(data.no == undefined) a.href = `quizes/${newText + data.name}/index.html`;
 	
 	if(data.subs.length != 0){
 		newList.appendChild(document.createElement("ol"))

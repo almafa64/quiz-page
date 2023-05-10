@@ -1,1 +1,1 @@
-var files=[{"name":"minecraft","subs":[]},{"name":"random földrajz","subs":[]},{"name":"test","subs":[{"name":"testSub1","subs":[]}]}]
+var files=[{"name":"minecraft","subs":[]},{"name":"random földrajz","subs":[]},{"name":"test","no":1,"subs":[{"name":"testSub1","subs":[]}]}]
