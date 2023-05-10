@@ -33,25 +33,22 @@ function testWrite(){ //write
 	.catch(err => console.error(err));
 }*/
 
-function createListItem(data, currentOl){
+function createListItem(data, currentOl, newText){
 	const newList = currentOl.appendChild(document.createElement("li"));
 
 	const a = newList.appendChild(document.createElement("a"));
 	a.innerText = data.name;
 
-	/*const link = window.location.href;
-	const endIndex = link.indexOf("index.html")-1;
-	a.href = `${link.substring(0, endIndex)}/quizes/${data.name}/index.html`;*/
-	a.href = `quizes/${data.name}/index.html`;
+	a.href = `quizes/${newText + data.name}/index.html`;
 	
 	if(data.subs.length != 0){
 		newList.appendChild(document.createElement("ol"))
 		data.subs.forEach(e => {
-			createListItem(e, newList.lastChild);
+			createListItem(e, newList.lastChild, `${data.name}_`);
 		}); 
 	}
 }
 
 files.forEach(e => {
-	createListItem(e, test);
+	createListItem(e, test, "");
 })
