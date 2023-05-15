@@ -1,1 +1,1 @@
-var files=[{"name":"minecraft","subs":[]},{"name":"random földrajz","subs":[]},{"name":"test","no":1,"subs":[{"name":"testSub1","subs":[]}]},{"name":"aa","subs":[{"name":"niga","subs":[],"no":0}],"no":1},{"name":"bb","subs":[{"name":"niga2","subs":[],"no":0}],"no":1},{"name":"cc","subs":[{"name":"niga3","subs":[],"no":0}],"no":1},{"name":"dd","subs":[{"name":"niga4","subs":[{"name":"test3","subs":[],"no":0}],"no":0},{"name":"niga5","subs":[],"no":0}],"no":1}]
+var files=[{"name":"minecraft","subs":[]},{"name":"random földrajz","subs":[]},{"name":"test2","subs":[],"no":0}]

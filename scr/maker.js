@@ -14,7 +14,7 @@ var dataScript = null;
 var filesScript = null;
 
 var quizType = null;
-var topicName = null;
+var topicName = "";
 var quizNum = -1;
 
 var files = [];
@@ -339,10 +339,9 @@ function save(){
 			else if(/([_])\1+|^_|_$/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett és nem lehet "/" a szöveg elején sem végén!');
 			else {
 				const newPath = newTopicName.split("_");
-				const t = topicName.split("_");
 				const finded = multiIndex(files, topicList.value);
 
-				if(newPath.length == t.length && topicName != newTopicName) {
+				if( topicName != "" && newPath.length == topicName.split("_").length && topicName != newTopicName) {
 					const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
 					finded.element.no = hasData;
 					finded.element.name = last(newPath);
@@ -356,7 +355,8 @@ function save(){
 						const currentFile = tmpFiles.find(e => e.name == currentPath);
 
 						if(i == n - 1){
-							if(topicName != undefined && !newPath.some(e => t.includes(e))) deleteOldEntry(finded.parent); // új téműnak van-e kapcsolata régi témához és ha nincs akkor törlöni
+							const t = topicName.split("_");
+							if(topicName != "" && !newPath.some(e => t.includes(e))) deleteOldEntry(finded.parent); // új téműnak van-e kapcsolata régi témához és ha nincs akkor törlöni
 							const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
 
 							if(currentFile == undefined) tmpFiles.push({name: currentPath, subs: [], no: hasData});
