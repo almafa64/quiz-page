@@ -1,7 +1,8 @@
 const type = document.getElementById("type");
 const hold = document.getElementById("hold");
 const saveBut = document.getElementById("save");
-const iframe = document.getElementById("webHold");
+const webHold = document.getElementById("webHold");
+const topicHold = document.getElementById("topicHold");
 
 const topicList = document.getElementById("topic");
 const topicListName = document.getElementById("topicName");
@@ -12,11 +13,45 @@ const quizListName = document.getElementById("questionName");
 var dataScript = null;
 var filesScript = null;
 
-var quizType = -1;
-var topicName = "";
+var quizType = null;
+var topicName = null;
 var quizNum = -1;
 
 var files = [];
+var data = undefined;
+
+String.prototype.insertAt = function(index, text, rem = 0) {
+	return this.substring(0, index) + text + this.substring(index + rem, this.length);
+}
+
+function parseMarkdown(text){
+	function replace(value, left, right){
+		const diff = left.length - value.length;
+		const toDelete = value.length;
+
+		var lastNext = 0;
+		while(true){
+			const current = text.indexOf(value, lastNext);
+			if(current == -1) break;
+			const next = text.indexOf(value, current + 1);
+			if(next == -1) break;
+
+			lastNext = next + diff;
+
+			text = text.insertAt(current, left, toDelete);
+			text = text.insertAt(lastNext, right, toDelete);
+		}
+	}
+	replace("**", "<b>", "</b>");
+	replace("*", "<i>", "</i>");
+	replace("~~", "<del>", "</del>");
+	replace("__", "<u>", "</u>");
+	return text;
+}
+
+function deParseMarkdown(text){
+	return text.replace(/<b>|<\/b>/gi, "**").replace(/<i>|<\/i>/gi, "*").replace(/<del>|<\/del>/gi, "~~").replace(/<u>|<\/u>/gi, "__");
+}
 
 function last(array){
 	return array[array.length - 1];
@@ -91,23 +126,25 @@ function loadThings(loadFiles = true, loadTopics = false){
 	}
 }
 
-function addRow(leftText = "", rightText = "", selected = false){
+function addRow(leftText = "", rightText = "", selected = false){ // "mégegy sor hozzáadása" gomb addRow.button-ban van tárolva
 	if(isNaN(quizType)) return false;
 
-	const p = hold.appendChild(document.createElement("p"));
+	const div = hold.appendChild(document.createElement("div"));
 	const leftArea = document.createElement("textarea");
 	leftArea.value = leftText;
-	p.append(`${hold.childElementCount}, `, leftArea);
+	const span = document.createElement("span");
+	span.innerText = `${hold.childElementCount - (hold.firstElementChild == addRow.button ? 1 : 0)}, `;
+	div.append(span, leftArea);
 
 	switch(quizType){
 		case 0:
-			const checkbox = p.appendChild(document.createElement("input"));
+			const checkbox = div.appendChild(document.createElement("input"));
 			checkbox.type = "checkbox";
 			checkbox.name = "a";
 			checkbox.checked = selected;
 			break;
 		case 1:
-			const radio = p.appendChild(document.createElement("input"));
+			const radio = div.appendChild(document.createElement("input"));
 			radio.type = "radio";
 			radio.name = "a";
 			radio.checked = selected;
@@ -115,15 +152,40 @@ function addRow(leftText = "", rightText = "", selected = false){
 		case 2: // párba
 			const rightArea = document.createElement("textarea");
 			rightArea.value = rightText;
-			p.append(" - ", rightArea);
+			div.append(" - ", rightArea);
 			break;
 		case 4: // térkép
 			alert("no");
 			break;
 	}
 
+	const deleteButton = div.appendChild(document.createElement("button"));
+	deleteButton.type = "button";
+	deleteButton.innerText = "Törlés";
+	deleteButton.onclick = () => {
+		if(hold.childElementCount == 1){
+			hold.appendChild(deleteButton.parentElement.lastElementChild);
+			deleteButton.parentElement.remove();
+			return;
+		}
+
+		const bros = [...hold.children]
+
+		if(deleteButton.parentElement == last(bros)){
+			bros[bros.length-2].appendChild(deleteButton.parentElement.lastElementChild);
+		}
+
+		const thisNum = parseInt(deleteButton.parentElement.firstElementChild.innerText);
+		deleteButton.parentElement.remove();
+		for(var i = thisNum; i < bros.length; i++){
+			const bro = bros[i];
+			const text = bro.firstElementChild.innerText;
+			bro.firstElementChild.innerText = `${i}${text.substring(text.indexOf(","))}`;
+		}
+	};
+
 	if(addRow.button == undefined){
-		const button = p.appendChild(document.createElement("button"));
+		const button = div.appendChild(document.createElement("button"));
 		button.innerText = "mégegy sor hozzáadása";
 		button.type = "button";
 		button.addEventListener("click", e => {
@@ -131,7 +193,7 @@ function addRow(leftText = "", rightText = "", selected = false){
 		});
 		addRow.button = button;
 	}
-	else p.appendChild(addRow.button);
+	else div.appendChild(addRow.button);
 
 	return true;
 }
@@ -151,12 +213,13 @@ function changeTopic(){
 		const text = topicList.selectedOptions[0].innerText;
 		topicName = encodeSlash(text);
 		topicListName.value = text;
-		loadThings();
 		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = false;
+		topicHold.src = `/quizes/${topicName}/index.html`;
 	}
 	else{
 		topicListName.value = topicName = "";
 		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = true;
+		topicHold.src = "/templates/topic.html";
 	}
 }
 
@@ -166,10 +229,10 @@ function changeQuiz(){
 	if(quizList.value != ""){
 		quizNum = parseInt(quizList.value);
 
-		iframe.src = `/quizes/${topicName}/${quizNum+1}.html`;
-		iframe.onload = () => {
-			quizListName.value = iframe.contentDocument.getElementById("question").innerText;
-			const iframeQuiz = iframe.contentDocument.getElementById("quiz");
+		webHold.src = `/quizes/${topicName}/${quizNum+1}.html`;
+		webHold.onload = () => {
+			quizListName.value = webHold.contentDocument.getElementById("question").innerText;
+			const iframeQuiz = webHold.contentDocument.getElementById("quiz");
 			quizType = parseInt(iframeQuiz.getAttribute("t"));
 			type.value = quizType;
 
@@ -187,7 +250,7 @@ function changeQuiz(){
 					break;
 				case 2:
 					const leftSide = iframeQuiz.querySelectorAll(".row .col-5:first-child p");
-					iframe.contentDocument.getElementById("hold").querySelectorAll("p").forEach((e, i) => {
+					webHold.contentDocument.getElementById("hold").querySelectorAll("p").forEach((e, i) => {
 						addRow(leftSide[i].innerText, e.innerText);
 					});
 					break;
@@ -200,94 +263,162 @@ function changeQuiz(){
 		};
 	}
 	else{
-		quizListName.value = "";
-		type.value = "";
+		quizNum = -1;
+		type.value = quizListName.value = "";
 	}
 }
 
-topicListName.oninput = (e) => {
+topicListName.oninput = (e) => { // lastLength topicListName-ben van tárolva
 	var text = topicListName.value;
-	if(last(text) == "_") {
-		alert('Nem lehet "_" a téma névben');
-		text = text.slice(0, -1);
+
+	const cursorPos = e.target.selectionStart - 1;
+	const currentChar = text[cursorPos];
+
+	if(/[#%&{}<>*?$!'":@+`|=_]/gi.test(currentChar)){
+		alert(`Nem lehet "${currentChar}" a téma nevében`);
+		topicListName.value = text = text.insertAt(cursorPos, "", 1)
+		e.target.selectionEnd = e.target.selectionStart = cursorPos;
 	}
 
 	if(text.length == 0){
 		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = true;
 		if(topicList.value == "") saveBut.disabled = true;
 	}
-	else if(text.length == 1) {
+	else{
 		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = false;
 		if(topicList.value == "") saveBut.disabled = false;
+		if(quizList.childElementCount != 1 && currentChar == "/"){
+			const tmp = quizList.firstElementChild;
+			quizList.innerHTML = "";
+			quizList.appendChild(tmp);
+			topicHold.src = "/templates/topic.html";
+		}
 	}
+
+	topicListName.lastLength = text.length;
 }
 
-/*quizListName.oninput = (e) => {
-	
-}*/
+topicHold.onload = () => {
+	const isNotTemplate = !topicHold.src.includes("/templates/topic.html");
+	if(topicName != "" && isNotTemplate) topicDesc.value = deParseMarkdown(topicHold.contentDocument.getElementById("desc").innerHTML);
+	data = topicHold.contentWindow.data;
+	loadThings(isNotTemplate);
+}
+
+function deleteServerFile(path, quizNum = 0){
+	//console.log(`/del?n=${path}&i=${quizNum==0?1:0}${quizNum!=0?"&q="+quizNum:""}`);
+	const isQuiz = quizNum != 0;
+	fetch(`/del?n=${path}&i=${isQuiz?1:0}${isQuiz?"&q="+quizNum:""}`, {method: 'POST'})
+	.then(() => window.location.reload())
+	.catch(err => console.error(err));
+}
+
+function deleteOldEntry(parent, reload = false){
+	parent.splice(last(topicList.value), 1);
+	deleteServerFile(topicName, reload);
+}
 
 function save(){
 	function templateWrite(template, func){
-		iframe.src = `/templates/${template}.html`;
-		iframe.onload = () => {
-			var newTopicName = topicListName.value;
-			if(newTopicName.length == 0) multiIndex(files, topicList.value).parent.splice(last(topicList.value), 1); // send delete request to server
-			else if(last(newTopicName) == "/") return alert('Nem lehet "/" a téma név végén');
-			else if(newTopicName[0] == "/") return alert('Nem lehet "/" a téma név elején');
-			else if(/([/])\1+/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett');
+		webHold.src = `/templates/${template}.html`;
+		webHold.onload = () => {
+			const newTopicName = encodeSlash(topicListName.value);
+			const textAreas = hold.querySelectorAll("textarea");
+
+			if(newTopicName.length == 0) {
+				deleteOldEntry(multiIndex(files, topicList.value).parent);
+				const topicJson = "var files=" + JSON.stringify(files);
+				fetch(`/save?n=`, {
+					method: 'POST',
+					body: JSON.stringify([null, null, topicJson, null])
+				})
+				.then(() => window.location.reload())
+				.catch(err => console.error(err));
+				return;
+			}
+			else if(/([_])\1+|^_|_$/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett és nem lehet "/" a szöveg elején sem végén!');
 			else {
+				const newPath = newTopicName.split("_");
+				const t = topicName.split("_");
 				const finded = multiIndex(files, topicList.value);
-				const newPath = newTopicName.split("/");
-				var tmpFiles = files;
 
-				for(var i = 0, n = newPath.length; i < n; i++){
-					const currentPath = newPath[i];
-					const currentFile = tmpFiles.find(e => e.name == currentPath);
-					console.log(currentFile, currentPath);
-					if(i == n - 1){
-						const t = topicName.split("_");
-						if(!newPath.some(e => t.includes(e))) finded.parent.splice(last(topicList.value), 1);
+				if(newPath.length == t.length && topicName != newTopicName) {
+					const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
+					finded.element.no = hasData;
+					finded.element.name = last(newPath);
+					fetch(`/rename?n1=${topicName}&n2=${newTopicName}`, {method: 'POST'}).catch(err => console.error(err));
+				}
+				else{
+					var tmpFiles = files;
 
-						if(currentFile == undefined) {
-							tmpFiles.push({name: currentPath, subs: [], no: 1}); // set no by inputs (has description or quizes)
+					for(var i = 0, n = newPath.length; i < n; i++){
+						const currentPath = newPath[i];
+						const currentFile = tmpFiles.find(e => e.name == currentPath);
+
+						if(i == n - 1){
+							if(topicName != undefined && !newPath.some(e => t.includes(e))) deleteOldEntry(finded.parent); // új téműnak van-e kapcsolata régi témához és ha nincs akkor törlöni
+							const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
+
+							if(currentFile == undefined) tmpFiles.push({name: currentPath, subs: [], no: hasData});
+							else currentFile.no = hasData;
 						}
 						else{
-							// set no by inputs (has description or quizes)
+							if(currentFile == undefined) {
+								tmpFiles.push({name: currentPath, subs: [], no: 1});
+								tmpFiles = last(tmpFiles).subs;
+							}
+							else tmpFiles = currentFile.subs;
 						}
-
-						topicName = currentPath;
-					}
-					else{
-						if(currentFile == undefined) {
-							tmpFiles.push({name: currentPath, subs: [], no: 1});
-							tmpFiles = last(tmpFiles).subs;
-						}
-						else tmpFiles = currentFile.subs;
 					}
 				}
 			}
-
-			console.log(files);
 			
-			const updatedFiles = "var files=" + JSON.stringify(files);
+			if(data == undefined) data = topicHold.contentWindow.data;
+			if(quizNum == -1) quizNum = data.max_page;
+
+			topicName = newTopicName;
+
+			topicHold.contentDocument.getElementsByTagName("title")[0].innerText = topicHold.contentDocument.getElementById("name").innerText = newTopicName.substring(newTopicName.lastIndexOf("_") + 1);
+	
+			const topicText = topicHold.contentDocument.documentElement.outerHTML.replace(/[^\S ]/g, "");
+			const startIndex = topicText.indexOf('"desc">') + '"desc">'.length;
+			const endIndex = topicText.indexOf('</div>', startIndex);
+			const topicHtml = "<!DOCTYPE html>" + topicText.insertAt(startIndex, parseMarkdown(topicDesc.value), endIndex - startIndex);
+
+			const topicJson = "var files=" + JSON.stringify(files);
 
 			if(template == "empty"){
-				fetch(`/save?n=${topicName}&m=0`, {
+				const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
+				fetch(`/save?n=${topicName}`, {
 					method: 'POST',
-					body: updatedFiles
+					body: JSON.stringify([null, quizJson, topicJson, topicHtml])
 				})
-				//.then(() => window.location.reload())
+				.then(() => window.location.reload())
 				.catch(err => console.error(err));
 				return;
 			}
 
-			iframe.contentDocument.getElementById("question").innerText = document.getElementById("questionName").value;
-			iframe.contentDocument.getElementsByTagName("title")[0].innerText = `${quizNum+1}. Kérdés`;
+			if(quizListName.value == ""){
+				deleteServerFile(`${topicName}/${quizNum+1}.html`, quizNum+1);
+				data.max_page--;
+				data.good.splice(quizNum, 1)
+				const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
+				fetch(`/save?n=${topicName}&q=${quizNum}`, {
+					method: 'POST',
+					body: JSON.stringify([null, quizJson, topicJson, topicHtml])
+				})
+				.then(() => window.location.reload())
+				.catch(err => console.error(err));
+				return;
+			}
 
-			const quiz = iframe.contentDocument.getElementById("quiz");
-			func(quiz, hold.querySelectorAll("textarea"));
+			webHold.contentDocument.getElementById("question").innerText = quizListName.value;
+			webHold.contentDocument.getElementsByTagName("title")[0].innerText = `${quizNum+1}. Kérdés`;
 
-			const html = "<!DOCTYPE html>" + iframe.contentDocument.documentElement.outerHTML.replace(/[^\S ]/g, "");
+			const quiz = webHold.contentDocument.getElementById("quiz");
+			func(quiz, textAreas);
+
+			const quizHtml = "<!DOCTYPE html>" + webHold.contentDocument.documentElement.outerHTML.replace(/[^\S ]/g, "");
 			const allInput = hold.querySelectorAll("input");
 			switch(quizType){
 				case 0:
@@ -319,13 +450,16 @@ function save(){
 				case 4:
 					break;
 			}
-			const json = `const data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
 
-			fetch(`/save?n=${topicName}&q=${quizNum}&m=1`, {
+			if(data.max_page == quizNum) data.max_page++;
+
+			const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
+
+			fetch(`/save?n=${topicName}&q=${quizNum}`, {
 				method: 'POST',
-				body: JSON.stringify([html, json, updatedFiles])
+				body: JSON.stringify([quizHtml, quizJson, topicJson, topicHtml])
 			})
-			//.then(() => window.location.reload())
+			.then(() => window.location.reload())
 			.catch(err => console.error(err));
 		};
 	}
@@ -344,12 +478,10 @@ function save(){
 		});
 	}
 
-	if(quizType == -1){
-		templateWrite("empty", () => {});
-		return;	
-	}
-
 	switch(quizType){
+		case null:
+			templateWrite("empty", () => {});
+			return;
 		case 0:
 			templateWrite("checkbox", (iframeQuiz, textAreas) => basicType("checkbox", iframeQuiz, textAreas));
 			break;

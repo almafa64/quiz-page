@@ -25,7 +25,7 @@
 				</select><br>
 				<label for="topicName">Téma neve: </label>
 				<input type="text" id="topicName" placeholder="Téma neve"><br>
-
+				
 				<label for="topicDesc">Téma leírása: </label>
 				<textarea id="topicDesc" placeholder="Téma leírása" rows="5" disabled></textarea><br>
 
@@ -33,7 +33,7 @@
 				<select id="question" onchange="changeQuiz()" disabled>
 					<option value="" selected>-</option>
 				</select><br>
-				<label for="questionName">Kérdés szövege: </label>
+				<label for="questionName">Kérdés címe: </label>
 				<input type="text" id="questionName" placeholder="Kérdés címe" disabled><br>
 
 				<label for="type">tipus</label>
@@ -77,6 +77,7 @@
 	</div>
 
 	<iframe id="webHold" hidden></iframe>
+	<iframe id="topicHold" src="/templates/topic.html" hidden></iframe>
 
 	<script src="scr/maker.js"></script>
 </body>

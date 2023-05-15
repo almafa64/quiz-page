@@ -1,3 +1,7 @@
+:disabled{
+	cursor: not-allowed;
+}
+
 nav.nav-tabs{
 	background-color: lightcoral;
 	padding: 2px 0 0 3px;

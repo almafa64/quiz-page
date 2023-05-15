@@ -104,7 +104,9 @@ scr/files.js:
 		4: [{"type":"Feature","geometry":{"type":"Point","coordinates":[lng, lat]}}, stb]
 
 
-python sM:
-	"0": téma törlése, csak scr/files.js írás
-	"1": normál, minden küldése (<téma>/<quiz>.html, <téma>/files.js, scr/files.js)
-	"2": 
+oldal_inditasa.py:
+	post_json: [<kérdés>.html, <téma>/files.js, /scr/files.js, <téma>/index.html]
+	queries:
+		q: quiz száma
+		n: a téma mappájának a neve
+		i: quiz-e a törlendő dolog

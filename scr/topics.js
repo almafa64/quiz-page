@@ -1,5 +1,7 @@
 const start = document.getElementById("start");
 
+start.disabled = data.max_page == 0;
+
 start.addEventListener("click", () => {
 	const link = window.location.href;
 	const startIndex = link.indexOf("quizes/") + "quizes/".length;
