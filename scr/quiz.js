@@ -12,7 +12,7 @@ const curNum = parseInt(link.substring(startIndex, endIndex)) - 1;
 
 const startIndex2 = link.indexOf("quizes/") + "quizes/".length;
 const endIndex2 = link.indexOf("/", startIndex2);
-const curName = link.substring(startIndex2, endIndex2);
+const curName = encodeURI(link.substring(startIndex2, endIndex2));
 
 const answers = data.good[curNum];
 

@@ -1,3 +1,7 @@
+input[type="radio"], input[type="checkbox"]{
+	margin-right: 0.6rem;
+}
+
 #jump div{
 	border: 1px solid grey;
 	border-radius: 10px;

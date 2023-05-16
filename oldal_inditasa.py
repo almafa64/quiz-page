@@ -2,9 +2,11 @@ import http.server
 import socketserver
 import webbrowser
 from urllib.parse import urlparse
+from urllib.parse import unquote
 import json
 import os
 import shutil
+
 
 def ins(index, insert, text, rem):
     return text[:index - rem] + insert + text[index:]
@@ -23,7 +25,7 @@ class m(http.server.SimpleHTTPRequestHandler):
 		queries = dict(x.split("=") for x in urlparse(self.path).query.split("&"))
 		print(queries)
 		if "/save" in self.path:
-			topic_name : str = queries["n"]
+			topic_name : str = unquote(queries["n"])
 			content_length = int(self.headers['Content-Length'])
 			post_data = self.rfile.read(content_length).decode('utf-8')
 
@@ -45,7 +47,7 @@ class m(http.server.SimpleHTTPRequestHandler):
 				with open(f"quizes\\{topic_name}\\index.html", "w", encoding="utf-8") as f:
 					f.write(post_json[3])
 		elif "/del" in self.path:
-			topic_name : str = queries["n"]
+			topic_name : str = unquote(queries["n"])
 			isQuiz = int(queries["i"]) == 1
 			delete_path = f'quizes/{topic_name}'
 			if(isQuiz):
@@ -73,8 +75,8 @@ class m(http.server.SimpleHTTPRequestHandler):
 			else:
 				shutil.rmtree(delete_path)
 		elif "/rename" in self.path:
-			old_path = queries["n1"]
-			new_path = queries["n2"]
+			old_path = unquote(queries["n1"])
+			new_path = unquote(queries["n2"])
 			os.rename(f"quizes/{old_path}", f"quizes/{new_path}")
 		self.send_response(200)
 		self.end_headers()

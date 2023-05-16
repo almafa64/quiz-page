@@ -33,8 +33,21 @@ function parseMarkdown(text){
 		while(true){
 			const current = text.indexOf(value, lastNext);
 			if(current == -1) break;
-			const next = text.indexOf(value, current + 1);
-			if(next == -1) break;
+			else if(current > 0 && text[current-1] == "\\"){
+				lastNext++;
+				continue;
+			}
+			var offset = 0;
+			var next;
+			while(true){
+				next = text.indexOf(value, current + toDelete + offset);
+				if(next == -1) return;
+				else if(next > 0 && text[next-1] == "\\"){
+					offset++;
+					continue;
+				}
+				else break;
+			}
 
 			lastNext = next + diff;
 
@@ -88,7 +101,6 @@ function loadThings(loadFiles = true, loadTopics = false){
 		document.body.appendChild(dataScript);
 		dataScript.onload = () => {
 			console.log(data);
-
 			data.good.forEach((e,i) => {
 				const tmp = quizList.appendChild(document.createElement("option"));
 				tmp.value = i;
@@ -110,7 +122,7 @@ function loadThings(loadFiles = true, loadTopics = false){
 				const tmp = topicList.appendChild(document.createElement("option"));
 				
 				tmp.value = `${indexes}`;
-				tmp.innerText = top;
+				tmp.innerText = decodeURI(top);
 
 				if(list.length != 0){
 					indexes.push(0);
@@ -210,9 +222,9 @@ function changeTopic(){
 	quizList.appendChild(empty);
 
 	if(topicList.value != ""){
-		const text = topicList.selectedOptions[0].innerText;
-		topicName = encodeSlash(text);
-		topicListName.value = text;
+		const selected = topicList.selectedOptions[0].innerText;
+		topicName = encodeSlash(selected);
+		topicListName.value = selected;
 		topicDesc.disabled = quizList.disabled = quizListName.disabled = type.disabled = saveBut.disabled = false;
 		topicHold.src = `/quizes/${topicName}/index.html`;
 	}
@@ -300,17 +312,20 @@ topicListName.oninput = (e) => { // lastLength topicListName-ben van tárolva
 
 topicHold.onload = () => {
 	const isNotTemplate = !topicHold.src.includes("/templates/topic.html");
-	if(topicName != "" && isNotTemplate) topicDesc.value = deParseMarkdown(topicHold.contentDocument.getElementById("desc").innerHTML);
+	if(topicName != "" && isNotTemplate) topicDesc.value = deParseMarkdown(topicHold.contentDocument.getElementById("desc").innerHTML.replaceAll("<br>", "\n"));
 	data = topicHold.contentWindow.data;
 	loadThings(isNotTemplate);
 }
 
-function deleteServerFile(path, quizNum = 0){
-	//console.log(`/del?n=${path}&i=${quizNum==0?1:0}${quizNum!=0?"&q="+quizNum:""}`);
-	const isQuiz = quizNum != 0;
-	fetch(`/del?n=${path}&i=${isQuiz?1:0}${isQuiz?"&q="+quizNum:""}`, {method: 'POST'})
-	.then(() => window.location.reload())
+function fetchPost(url, body = ""){
+	fetch(url, { method: 'POST', body: body })
+	.then(() => { if(body != "") window.location.reload() })
 	.catch(err => console.error(err));
+}
+
+function deleteServerFile(path, quizNum = 0){
+	const isQuiz = quizNum != 0;
+	fetchPost(`/del?n=${path}&i=${isQuiz?"1&q="+quizNum:"0"}`);
 }
 
 function deleteOldEntry(parent, reload = false){
@@ -319,6 +334,10 @@ function deleteOldEntry(parent, reload = false){
 }
 
 function save(){
+	function createQuizJson(){
+		return `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
+	}
+
 	function templateWrite(template, func){
 		webHold.src = `/templates/${template}.html`;
 		webHold.onload = () => {
@@ -327,13 +346,9 @@ function save(){
 
 			if(newTopicName.length == 0) {
 				deleteOldEntry(multiIndex(files, topicList.value).parent);
+
 				const topicJson = "var files=" + JSON.stringify(files);
-				fetch(`/save?n=`, {
-					method: 'POST',
-					body: JSON.stringify([null, null, topicJson, null])
-				})
-				.then(() => window.location.reload())
-				.catch(err => console.error(err));
+				fetchPost(`/save?n=`, JSON.stringify([null, null, topicJson, null]));
 				return;
 			}
 			else if(/([_])\1+|^_|_$/gi.test(newTopicName)) return alert('Nem lehet kettő vagy több "/" egymás mellett és nem lehet "/" a szöveg elején sem végén!');
@@ -345,7 +360,8 @@ function save(){
 					const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
 					finded.element.no = hasData;
 					finded.element.name = last(newPath);
-					fetch(`/rename?n1=${topicName}&n2=${newTopicName}`, {method: 'POST'}).catch(err => console.error(err));
+
+					fetchPost(`/rename?n1=${topicName}&n2=${newTopicName}`);
 				}
 				else{
 					var tmpFiles = files;
@@ -383,18 +399,12 @@ function save(){
 			const topicText = topicHold.contentDocument.documentElement.outerHTML.replace(/[^\S ]/g, "");
 			const startIndex = topicText.indexOf('"desc">') + '"desc">'.length;
 			const endIndex = topicText.indexOf('</div>', startIndex);
-			const topicHtml = "<!DOCTYPE html>" + topicText.insertAt(startIndex, parseMarkdown(topicDesc.value), endIndex - startIndex);
+			const topicHtml = "<!DOCTYPE html>" + topicText.insertAt(startIndex, parseMarkdown(topicDesc.value).replaceAll("\n", "<br>"), endIndex - startIndex);
 
 			const topicJson = "var files=" + JSON.stringify(files);
 
 			if(template == "empty"){
-				const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
-				fetch(`/save?n=${topicName}`, {
-					method: 'POST',
-					body: JSON.stringify([null, quizJson, topicJson, topicHtml])
-				})
-				.then(() => window.location.reload())
-				.catch(err => console.error(err));
+				fetchPost(`/save?n=${topicName}`, JSON.stringify([null, createQuizJson(), topicJson, topicHtml]));
 				return;
 			}
 
@@ -402,13 +412,8 @@ function save(){
 				deleteServerFile(`${topicName}/${quizNum+1}.html`, quizNum+1);
 				data.max_page--;
 				data.good.splice(quizNum, 1)
-				const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
-				fetch(`/save?n=${topicName}&q=${quizNum}`, {
-					method: 'POST',
-					body: JSON.stringify([null, quizJson, topicJson, topicHtml])
-				})
-				.then(() => window.location.reload())
-				.catch(err => console.error(err));
+
+				fetchPost(`/save?n=${topicName}&q=${quizNum}`, JSON.stringify([null, createQuizJson(), topicJson, topicHtml]));
 				return;
 			}
 
@@ -453,14 +458,7 @@ function save(){
 
 			if(data.max_page == quizNum) data.max_page++;
 
-			const quizJson = `var data={"max_page":${data.max_page},"good":${JSON.stringify(data.good)}}`;
-
-			fetch(`/save?n=${topicName}&q=${quizNum}`, {
-				method: 'POST',
-				body: JSON.stringify([quizHtml, quizJson, topicJson, topicHtml])
-			})
-			.then(() => window.location.reload())
-			.catch(err => console.error(err));
+			fetchPost(`/save?n=${topicName}&q=${quizNum}`, JSON.stringify([quizHtml, createQuizJson(), topicJson, topicHtml]));
 		};
 	}
 

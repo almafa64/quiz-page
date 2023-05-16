@@ -1,39 +1,6 @@
 const test = document.getElementById("test");
 
-/*fetch('scr/topics.js', { //dynamic read
-	mode: 'cors',
-	headers: {
-		"Access-Control-Allow-Origin": "*",
-		"Content-Type": "text/javascript",
-		"Content-Security-Policy": "script-src scr/topics.js"
-	},
-	credentials: "include",
-	method: "GET",
-	referrerPolicy: "unsafe-url"
-})
-.then(async response => {
-	const text = new TextDecoder().decode((await response.body.getReader().read()).value);
-	const a = JSON.parse(text.substring(11, text.length));
-	console.log(a)
-})
-.catch(err => console.error(err));
-
-console.log(data); //read
-
-function testWrite(){ //write
-	fetch('', {
-		method: 'POST',
-		headers: {
-		'Accept': 'application/json',
-		'Content-Type': 'application/json'
-		},
-		body: JSON.stringify([{"name":"handmade_oof","max_page":1,"subs":[]}])
-	})
-	.then(() => window.location.reload())
-	.catch(err => console.error(err));
-}*/
-
-function createListItem(data, currentOl, newText){
+function createListItem(data, currentOl, newText = ""){
 	const newList = currentOl.appendChild(document.createElement("li"));
 	const newerText = newText + data.name;
 
@@ -51,5 +18,5 @@ function createListItem(data, currentOl, newText){
 }
 
 files.forEach(e => {
-	createListItem(e, test, "");
+	createListItem(e, test);
 })

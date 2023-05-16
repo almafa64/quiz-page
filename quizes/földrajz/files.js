@@ -1,0 +1,1 @@
+var data={"max_page":6,"good":[3,3,1,0,2,42]}
