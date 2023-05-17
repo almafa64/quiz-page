@@ -2,6 +2,14 @@ input[type="radio"], input[type="checkbox"]{
 	margin-right: 0.6rem;
 }
 
+#curQuiz{
+    background-color: lightgrey;
+}
+
+#next{
+	display: none;
+}
+
 #jump div{
 	border: 1px solid grey;
 	border-radius: 10px;

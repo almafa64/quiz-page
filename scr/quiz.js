@@ -1,8 +1,6 @@
 if(window.frameElement != null) throw new Error("Here we stop");
 
 const next = document.getElementById("next");
-next.style.display = "none";
-
 const prev = document.getElementById("prev");
 
 const link = decodeURI(window.location.href);
@@ -25,19 +23,27 @@ const quizType = parseInt(quiz.getAttribute("t"));
 const jump = document.getElementById("jump");
 
 var localPoints = 0;
-const params = new URLSearchParams(window.location.search);
-var points = parseInt(params.get('p'));
-if(isNaN(points) || points < 0) points = 0;
 var localErrors = 0;
-var errors = parseInt(params.get('e'));
-if(isNaN(errors) || errors < 0) errors = 0;
+
+const params = new URLSearchParams(window.location.search);
+function getParam(parma){
+	const tmp = parseInt(params.get(parma));
+	return (isNaN(tmp) || tmp < 0) ? 0 : tmp;
+}
+var points = getParam("p");
+var errors = getParam("e");
+
 window.history.replaceState(null, "", `../../quizes/${curName}/${curNum+1}.html`);
+
+function createDiv(){
+	return document.createElement("div");
+}
 
 function nextLink(){
 	window.location.href = `../../quizes/${curName}/${curNum+2}.html?p=${points+localPoints}&e=${errors+localErrors}`;
 }
 function prevLink(){
-	window.location.href = `../../quizes/${curName}/${curNum}.html`; //`../../quizes/${curName}/${curNum}.html?p=${points}&e=${errors}`;
+	window.location.href = `../../quizes/${curName}/${curNum}.html`;
 }
 
 function shuffle(base){
@@ -45,10 +51,6 @@ function shuffle(base){
 		base.appendChild(base.children[Math.random() * i | 0]);
 	}
 }
-
-window.addEventListener('hashchange', function () {
-   alert('location changed!');
-});
 
 function four(n){ //temporary
 	const s = n+"";
@@ -64,15 +66,17 @@ function four(n){ //temporary
 
 function check(e){
 	function goodFinish(){
-		alert("jó válasz");
-		e.style.display = "none";
-		next.style.display = "";
+		showModal("Jó válasz", "", "Következő", () => nextLink());
 		localPoints = 1;
 		if(next.disabled){
 			const bad = localErrors + errors;
 			const good= localPoints + points;
-			alert(`Pontjaid: ${good}\nHibáid: ${bad}\nEredmény: ${(good - bad) / data.max_page * 100}%`);
-			if(confirm("Vissza szeretnél térni a főoldalra?")) window.location.href = "../../index.html";
+			const diff = good - bad;
+			showModal(
+				"Itt a vége, fuss el véle",
+				`Pontjaid: ${good}\nHibáid: ${bad}\nEredmény: ${(diff < 0) ? 0 : diff / data.max_page * 100}%`, 
+				"Főmenü", () => window.location.href = "../../index.html"
+			);
 		}
 	}
 
@@ -124,7 +128,7 @@ function check(e){
 	if(good) goodFinish();
 	else{
 		localErrors++;
-		if(confirm("Rossz válasz!\nSzabad a gazda?")){
+		showModal("Rossz válasz!", "Szabad a gazda?", "Igen", () => {
 			switch(quizType){
 				case 0:
 					const checks = quiz.querySelectorAll("input");
@@ -165,8 +169,7 @@ function check(e){
 					L.geoJSON(answers).addTo(check.map);
 					break;
 			}
-			setTimeout(goodFinish, 50);
-		}
+		});
 	}
 }
 
@@ -176,14 +179,15 @@ else next.addEventListener("click", nextLink);
 if(curNumTooSmall) prev.disabled = true;
 else prev.addEventListener("click", prevLink);
 
-for(var i = 1; i <= data.max_page; i++){
-	const div = jump.appendChild(document.createElement("div"));
+for(var i = 1, c = curNum+1; i <= data.max_page; i++){
+	const div = jump.appendChild(createDiv());
 	div.classList.value = "p-sm-2 px-sm-3 p-1 px-2 mx-sm-2 mx-1";
+	if(i == c) div.id = "curQuiz";
 	const a = div.appendChild(document.createElement("a"));
 	a.href = `../../quizes/${curName}/${i}.html`;
 	a.innerText = `${i}.`;
 	a.addEventListener("click", () => {
-		a.href += (parseInt(a.innerText) <= curNum + 1) ? "" /*`?p=${points}&e=${errors}`*/ : `?p=${points + localPoints}&e=${errors + localErrors}`;
+		a.href += (parseInt(a.innerText) <= curNum + 1) ? "" : `?p=${points + localPoints}&e=${errors + localErrors}`;
 	});
 }
 
@@ -313,10 +317,8 @@ switch(quizType){
 				const rect = e.getBoundingClientRect();
 
 				activeE.style.position = "fixed";
-				/*activeE.style.top = `${ev.clientY - (parseFloat(height)/2)}px`; //snap to center
-				activeE.style.left = `${ev.clientX - (parseFloat(width)/2)}px`;*/
-				activeE.style.top = `${rect.top}px`; //snap to mouse
-				activeE.style.left= `${rect.left}px`;
+				activeE.style.top = `${rect.top}px`;
+				activeE.style.left = `${rect.left}px`;
 				activeE.style.width = width;
 				activeE.style.height = height;
 				quiz.appendChild(activeE);
@@ -324,7 +326,7 @@ switch(quizType){
 				if(lastPlace == "hold"){
 					if(hold.childElementCount == 0) hold.style.height = holdBaseHeight;
 				}
-				else parent.appendChild(document.createElement("div")).classList.value = `col-${(isSotring?"11":"5")} mx-auto drag`;
+				else parent.appendChild(createDiv()).classList.value = `col-${(isSotring?"11":"5")} mx-auto drag`;
 
 				document.body.style.userSelect = "none";
 			});
@@ -366,4 +368,37 @@ switch(quizType){
 			attribution: `${((domainNum != "0")?'&copy; <a href="https://carto.com/attributions">CARTO</a>':'')} &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
 		}).addTo(map);
 		break;
+}
+
+const modal = document.body.appendChild(createDiv());
+modal.classList = "modal fade";
+modal.innerHTML = '<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="modalTitle"></h5><button class="close" id="modalCancelButton">×</button></div><div class="modal-body" id="modalBody"></div><div class="modal-footer"><button class="btn btn-primary" id="modalOkButton"></button></div></div></div>';
+const modalTitle = modal.querySelector("#modalTitle");
+const modalBody = modal.querySelector("#modalBody");
+const modalCancelButton = modal.querySelector("#modalCancelButton");
+const modalOkButton = modal.querySelector("#modalOkButton");
+
+function closeModal(custom = undefined){
+	if(custom == undefined || custom){
+		modal.classList = "modal fade";
+		setTimeout(() => modal.style.display = "", 150);
+	}
+}
+
+modalCancelButton.onclick = (e) => { // saját function a modalCancelButton.custom()
+	closeModal(modalCancelButton.custom());
+};
+
+modalOkButton.onclick = (e) => { // saját function a modalOkButton.custom()
+	closeModal(modalOkButton.custom());
+};
+
+function showModal(title = "", body = "", okButton = "OK", okFunc = () => {}, cancelFunc = () => {}){
+	modalCancelButton.custom = cancelFunc;
+	modalOkButton.custom = okFunc;
+	modalTitle.innerText = title;
+	modalBody.innerText = body;
+	modalOkButton.innerText = okButton;
+	modal.style.display = "block";
+	setTimeout(() => modal.classList = "modal fade show", 150);
 }

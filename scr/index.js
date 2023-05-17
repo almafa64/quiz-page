@@ -10,7 +10,25 @@ function createListItem(data, currentOl, newText = ""){
 	if(data.no == undefined || data.no == 0) a.href = `quizes/${newerText}/index.html`;
 	
 	if(data.subs.length != 0){
-		newList.appendChild(document.createElement("ol"))
+		const ol = document.createElement("ol");
+		ol.style.display = "none";
+
+		const borderButton = newList.appendChild(document.createElement("span"));
+		borderButton.classList = "borderArrow";
+		const button = borderButton.appendChild(document.createElement("span"));
+		button.classList = "down arrow";
+		borderButton.onclick = (e) => {
+			if(button.classList == "down arrow"){
+				borderButton.nextElementSibling.style.display = "";
+				button.classList = "up arrow";
+			}
+			else{
+				borderButton.nextElementSibling.style.display = "none";
+				button.classList = "down arrow";
+			}
+		};
+
+		newList.appendChild(ol);
 		data.subs.forEach(e => {
 			createListItem(e, newList.lastChild, `${newerText}_`);
 		}); 
