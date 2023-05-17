@@ -1,0 +1,1 @@
+var data={"max_page":6,"good":[1,3,1,["telefon portja","monitorba","fel","a videókártyába","a konnektorba"],[0,1,2,3],2]}

@@ -1,0 +1,1 @@
+var data={"max_page":1,"good":[1]}

@@ -1,1 +1,1 @@
-var data={"max_page":1,"good":[5]}
+var data={"max_page":4,"good":[5,[],0,3]}

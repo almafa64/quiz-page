@@ -1,1 +1,0 @@
-var data={"max_page":4,"good":[1,[0,2,3],["kapu","deszka","man"],[]]}

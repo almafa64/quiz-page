@@ -1,1 +1,1 @@
-var data={"max_page":4,"good":[[],[],1,[]]}
+var data={"max_page":13,"good":[[],[],1,[],["voltam tegnap előtt","mert eltévedtem","tegnáp már megettem"],[],[0,1,2],0,1,[],["Breaking in","give you up","kuka","vízözön"],[0,1,2],["aztán hazamentem és minecraftoztam","dolor sit amet","minecraftban"]]}

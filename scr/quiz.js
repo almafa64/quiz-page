@@ -66,17 +66,19 @@ function four(n){ //temporary
 
 function check(e){
 	function goodFinish(){
-		showModal("Jó válasz", "", "Következő", () => nextLink());
 		localPoints = 1;
-		if(next.disabled){
-			const bad = localErrors + errors;
-			const good= localPoints + points;
-			const diff = good - bad;
-			showModal(
-				"Itt a vége, fuss el véle",
-				`Pontjaid: ${good}\nHibáid: ${bad}\nEredmény: ${(diff < 0) ? 0 : diff / data.max_page * 100}%`, 
-				"Főmenü", () => window.location.href = "../../index.html"
-			);
+		if(!next.disabled) showModal("Jó válasz", "", "Következő", () => nextLink());
+		else {
+			showModal("Jó válasz", "", "Eredmények", () => setTimeout(() => {
+				const bad = localErrors + errors;
+				const good= localPoints + points;
+				const diff = good - bad;
+				showModal(
+					"Itt a vége, fuss el véle",
+					`Pontjaid: ${good}\nHibáid: ${bad}\nEredmény: ${(diff < 0) ? 0 : diff / data.max_page * 100}%`, 
+					"Főmenü", () => window.location.href = "../../index.html"
+				);
+			}, 160));
 		}
 	}
 

@@ -1,5 +1,9 @@
 const test = document.getElementById("test");
 
+function alphaSort(a, b){
+	return (a.name > b.name) ? 1 : -1;
+}
+
 function createListItem(data, currentOl, newText = ""){
 	const newList = currentOl.appendChild(document.createElement("li"));
 	const newerText = newText + data.name;
@@ -29,12 +33,12 @@ function createListItem(data, currentOl, newText = ""){
 		};
 
 		newList.appendChild(ol);
-		data.subs.forEach(e => {
+		data.subs.sort(alphaSort).forEach(e => {
 			createListItem(e, newList.lastChild, `${newerText}_`);
 		}); 
 	}
 }
 
-files.forEach(e => {
+files.sort(alphaSort).forEach(e => {
 	createListItem(e, test);
 })

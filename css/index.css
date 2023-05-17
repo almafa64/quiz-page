@@ -14,9 +14,14 @@ li a, li:before, .borderArrow{
 li:before{ /*https://stackoverflow.com/a/21909808/*/
 	counter-increment: section;
 	content: counters(section, ".") ", ";
-	border-radius: var(--border-radius-size) 0 0 var(--border-radius-size);
 	margin-right: -2px;
 	padding-right: 0.2em;
+}
+li:first-child::before{
+	border-top-left-radius: var(--border-radius-size);
+}
+li:last-child::before{
+	border-bottom-left-radius: var(--border-radius-size);
 }
 li{
 	margin: 1em 0;
@@ -26,7 +31,7 @@ li > a, .borderArrow{
 }
 li:has(.borderArrow) > a{
 	border-radius: 0;
-	margin-right: -2px;
+	margin-right: -1.5px;
 }
 
 .jumbotron h1{
@@ -35,8 +40,6 @@ li:has(.borderArrow) > a{
 }
 
 .borderArrow{
-	border: 2px solid black;
-	padding: 0.5em;
 	user-select: none;
 	cursor: pointer;
 }

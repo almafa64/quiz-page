@@ -66,6 +66,40 @@ function deParseMarkdown(text){
 	return text.replace(/<b>|<\/b>/gi, "**").replace(/<i>|<\/i>/gi, "*").replace(/<del>|<\/del>/gi, "~~").replace(/<u>|<\/u>/gi, "__");
 }
 
+function listToRows(list, newType = null){
+	list = list.split("|");
+	list.forEach((e, i) => list[i] = e.trim());
+	quizListName.value = list.splice(0, 1)[0];
+
+	const numOfHyphen = list.reduce((acc, val) => acc += last(val) == "-" ? 1 : 0, 0);
+	if(newType == null){
+		if(numOfHyphen == 0) newType = 3;
+		else if(numOfHyphen == 1) newType = 1;
+		else newType = 0;
+	}
+
+	type.value = quizType = newType;
+
+	switch(newType){
+		case 0:
+		case 1:
+			list.forEach(e => {
+				const selected = last(e) == "-";
+				addRow(selected ? e.insertAt(e.length-1, "", 1).trim() : e, "", selected)
+			});
+			break;
+		case 3:
+			list.forEach(e => addRow(e));
+			break;
+		case 2:
+			list.forEach(e => {
+				const tmp = e.split("-");
+				addRow(tmp[0].trim(), tmp[1].trim());
+			});
+		
+	}
+}
+
 function last(array){
 	return array[array.length - 1];
 }
@@ -93,6 +127,10 @@ function multiIndex(array, index){
 }
 
 function loadThings(loadFiles = true, loadTopics = false){
+	function alphaSort(a, b){
+		return (a.name > b.name) ? 1 : -1;
+	}
+
 	if(loadFiles){
 		if(dataScript != null) dataScript.remove();
 		dataScript = document.createElement("script");
@@ -126,14 +164,14 @@ function loadThings(loadFiles = true, loadTopics = false){
 
 				if(list.length != 0){
 					indexes.push(0);
-					list.forEach(e => recuresion(`${top}/${e.name}`, e.subs));
+					list.sort(alphaSort).forEach(e => recuresion(`${top}/${e.name}`, e.subs));
 					indexes.pop();
 				}
 
 				indexes[indexes.length - 1]++;
 			}
 
-			files.forEach(e => recuresion(e.name, e.subs));
+			files.sort(alphaSort).forEach(e => recuresion(e.name, e.subs));
 		};
 	}
 }
@@ -286,7 +324,7 @@ topicListName.oninput = (e) => { // lastLength topicListName-ben van tárolva
 	const cursorPos = e.target.selectionStart - 1;
 	const currentChar = text[cursorPos];
 
-	if(/[#%&{}<>*?$!'":@+`|=_]/gi.test(currentChar)){
+	if(/[#%&{}<>*?$!'":@`|=_]/gi.test(currentChar)){
 		alert(`Nem lehet "${currentChar}" a téma nevében`);
 		topicListName.value = text = text.insertAt(cursorPos, "", 1)
 		e.target.selectionEnd = e.target.selectionStart = cursorPos;
@@ -344,6 +382,11 @@ function save(){
 			const newTopicName = encodeSlash(topicListName.value);
 			const textAreas = hold.querySelectorAll("textarea");
 
+			textAreas.forEach(e => e.value = e.value.trim());
+
+			if(data == undefined) data = topicHold.contentWindow.data;
+			if(quizNum == -1) quizNum = data.max_page;
+
 			if(newTopicName.length == 0) {
 				deleteOldEntry(multiIndex(files, topicList.value).parent);
 
@@ -356,9 +399,10 @@ function save(){
 				const newPath = newTopicName.split("_");
 				const finded = multiIndex(files, topicList.value);
 
+				const hasNoData = (topicDesc.value == "" && textAreas.length == 0 && data.max_page == 0) ? 1 : 0;
+
 				if( topicName != "" && newPath.length == topicName.split("_").length && topicName != newTopicName) {
-					const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
-					finded.element.no = hasData;
+					finded.element.no = hasNoData;
 					finded.element.name = last(newPath);
 
 					fetchPost(`/rename?n1=${topicName}&n2=${newTopicName}`);
@@ -373,10 +417,9 @@ function save(){
 						if(i == n - 1){
 							const t = topicName.split("_");
 							if(topicName != "" && !newPath.some(e => t.includes(e))) deleteOldEntry(finded.parent); // új téműnak van-e kapcsolata régi témához és ha nincs akkor törlöni
-							const hasData = (topicDesc.value == "" && textAreas.length == 0) ? 1 : 0;
 
-							if(currentFile == undefined) tmpFiles.push({name: currentPath, subs: [], no: hasData});
-							else currentFile.no = hasData;
+							if(currentFile == undefined) tmpFiles.push({name: currentPath, subs: [], no: hasNoData});
+							else currentFile.no = hasNoData;
 						}
 						else{
 							if(currentFile == undefined) {
@@ -388,9 +431,6 @@ function save(){
 					}
 				}
 			}
-			
-			if(data == undefined) data = topicHold.contentWindow.data;
-			if(quizNum == -1) quizNum = data.max_page;
 
 			topicName = newTopicName;
 
