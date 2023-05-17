@@ -174,7 +174,6 @@ function check(e){
 }
 
 if(curNumTooBig) next.disabled = true;
-else next.addEventListener("click", nextLink);
 
 if(curNumTooSmall) prev.disabled = true;
 else prev.addEventListener("click", prevLink);
